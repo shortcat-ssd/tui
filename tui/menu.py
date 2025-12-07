@@ -1,20 +1,11 @@
-
 import re
 
 from dataclasses import dataclass, InitVar, field
 from typing import Callable, Any, Dict, Iterable, Optional
 
-
+from .validators import validate_dataclass, validate
 from typeguard import typechecked
 
-def validate_dataclass(instance):
-    # esempio minimale: non fa niente
-    pass
-
-def validate(name, value, min_length=None, max_length=None, custom=None, equals=None):
-    # esempio minimale: solleva eccezioni se vuoi controlli
-    if custom and not custom(value):
-        raise ValueError(f"Validation failed for {name}")
 
 
 @typechecked
@@ -92,6 +83,7 @@ class Menu:
 
     def __print(self)-> None:
         length = len(str(self.description))
+        print("\n")
         fmt = '******+{}{}{}+******'
         print(fmt.format('*','*' * length, '*'))
         print(fmt.format(' ', self.description.value, ' '))
@@ -105,7 +97,7 @@ class Menu:
     def __select_from_input(self)-> bool:
         while True:
             try:
-                line = input("?")
+                line = input("Digita il numero: ")
                 key = Key(line.strip())
                 entry = self.__key2entry[key]
                 entry.on_selected()

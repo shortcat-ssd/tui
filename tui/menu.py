@@ -8,6 +8,12 @@ from typeguard import typechecked
 
 
 
+def is_alphanumeric(value: str) -> bool:
+    return bool(re.fullmatch(r'[a-zA-Z0-9]*', value))
+
+def is_alphanumeric_space(value: str) -> bool:
+    return bool(re.fullmatch(r'[a-zA-Z0-9 ]*', value))
+
 @typechecked
 @dataclass(order=True,frozen=True)
 class Key:
@@ -15,7 +21,7 @@ class Key:
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('Key.value', self.value,min_length=1, max_length=10,custom=lambda s: re.fullmatch(r'[a-zA-Z0-9]*', s) is not None)
+        validate('Key.value', self.value,min_length=1, max_length=10,custom=is_alphanumeric)
 
     def __str__(self):
         return self.value
@@ -28,7 +34,7 @@ class Description:
 
     def __post_init__(self):
         validate_dataclass(self)
-        validate('Description.value', self.value, min_length=2, max_length=100,custom=lambda s: re.fullmatch(r'[a-zA-Z0-9 ]*', s) is not None)
+        validate('Description.value', self.value, min_length=2, max_length=100,custom=is_alphanumeric_space)
 
     def __str__(self):
         return self.value

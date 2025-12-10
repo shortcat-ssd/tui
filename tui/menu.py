@@ -2,8 +2,8 @@ import re
 
 from dataclasses import dataclass, InitVar, field
 from typing import Callable, Any, Dict, Iterable, Optional
+from valid8 import validate
 
-from .validators import validate_dataclass, validate
 from typeguard import typechecked
 
 
@@ -20,7 +20,6 @@ class Key:
     value: str
 
     def __post_init__(self):
-        validate_dataclass(self)
         validate('Key.value', self.value,min_length=1, max_length=10,custom=is_alphanumeric)
 
     def __str__(self):
@@ -33,7 +32,6 @@ class Description:
     value: str
 
     def __post_init__(self):
-        validate_dataclass(self)
         validate('Description.value', self.value, min_length=2, max_length=100,custom=is_alphanumeric_space)
 
     def __str__(self):
@@ -49,7 +47,7 @@ class Entry:
     is_exit: bool = field(default=False)
 
     def __post_init__(self):
-        validate_dataclass(self)
+        pass
 
     @staticmethod
     def create(key: str, description: str, on_selected: Callable[[], None] = lambda: None,
@@ -73,7 +71,7 @@ class Menu:
 
     def __post_init__(self, create_key:Any):
         validate('create_key', create_key, custom=Menu.Builder.is_valid_key)
-        validate_dataclass(self)
+
 
 
     def _add_entry(self, value: Entry, create_key:Any)-> None:

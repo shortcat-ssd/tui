@@ -1,10 +1,15 @@
 from getpass import getpass
-from gettext import gettext
 
 from valid8 import ValidationError
 
+from tui.client import Backend
 from tui.domain import Username, Password
 from tui.menu import Menu, Entry, Description, Key
+
+
+
+
+client = Backend()
 
 def do_login():
     print("\n--- LOGIN ---")
@@ -17,11 +22,66 @@ def do_login():
             raw_pass = getpass("Password: ").strip()
             pw = Password(raw_pass)
 
-            print("\nLogin successfull.")
-            break
+
+            if client.login(user, pw):
+                print("\nLogin successfull.")
+                submenu()
+                break
+            else:
+                print("\nWrong username or password.")
+
 
         except ValidationError as e:
             print(f"Error: {e}. Riprova.\n")
+
+
+def logout():
+    client.logout()
+
+
+def convert_url():
+    print("Funzione convert_url ancora da implementare.")
+
+def edit_url():
+    print("Funzione edit_url ancora da implementare.")
+
+def delete_url():
+    print("Funzione delete_url ancora da implementare.")
+
+def url_history():
+    print("Funzione url_history ancora da implementare.")
+
+def url_info():
+    print("Funzione url_info ancora da implementare.")
+
+def edit_username():
+    print("Funzione edit_username ancora da implementare.")
+
+def edit_password():
+    print("Funzione edit_password ancora da implementare.")
+
+
+def submenu():
+
+
+    print("\n============= MENU ==============")
+
+    menu = (
+        Menu.Builder(Description(" OPZIONI "))
+        .with_entry(Entry.create("1", "Converti url", convert_url))
+        .with_entry(Entry.create("2", "Modifica url", edit_url))
+        .with_entry(Entry.create("3", "Elimina url", delete_url))
+        .with_entry(Entry.create("4", "Cronologia url", url_history))
+        .with_entry(Entry.create("5", "Informazioni specifiche di un url", url_info))
+        .with_entry(Entry.create("6", "Modifica username", edit_username))
+        .with_entry(Entry.create("7", "Modifica password", edit_password))
+        .with_entry(Entry.create("0", "Logout", logout, is_exit=True))
+        .build()
+    )
+
+    menu.run()
+
+
 
 
 def exit_message():
@@ -31,8 +91,8 @@ def exit_message():
 def main():
     menu = (
         Menu.Builder(Description("Menu di Test"))
-            .with_entry(Entry.create("1", "Entra",do_login))
-            .with_entry(Entry.create("0", "Esci", exit_message, is_exit=True))
+            .with_entry(Entry.create("1", "Login",do_login))
+            .with_entry(Entry.create("0", "Logout", exit_message, is_exit=True))
             .build()
     )
 

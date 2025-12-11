@@ -20,6 +20,10 @@ def is_strong_password(value: str) -> bool:
     return bool(re.fullmatch(pattern, value))
 
 
+def is_email(value: str) -> bool:
+    pattern = r'^[a-z0-9]+@[a-z0-9]+(\.[a-z0-9]+)+$'
+    return bool(re.fullmatch(pattern, value))
+
 @typechecked
 @dataclass(frozen=True)
 class Username:
@@ -40,3 +44,11 @@ class Password:
 
     def __post_init__(self):
         validate('Password.value', self.value,min_length=8, max_length=50, custom=is_strong_password)
+
+
+@typechecked
+@dataclass(frozen=True)
+class Email:
+    value: str
+    def __post_init__(self):
+        validate('Email.value', self.value, min_length=5, max_length=50, custom=is_email)

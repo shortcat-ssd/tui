@@ -3,7 +3,7 @@ from getpass import getpass
 from valid8 import ValidationError
 
 from tui.client import Backend
-from tui.domain import Username, Password
+from tui.domain import Username, Password, Email
 from tui.menu import Menu, Entry, Description, Key
 
 
@@ -37,6 +37,38 @@ def do_login():
 
 def logout():
     client.logout()
+
+def do_register():
+    print("\n--- REGISTRATION ---")
+    while True:
+        try:
+            raw_user = input("Username: ").strip()
+            user = Username(raw_user)
+
+            raw_email = input("Email: ").strip()
+            email = Email(raw_email)
+
+            password = getpass("Password: ").strip()
+            pw1 = Password(password)
+
+            confirm_password = getpass("Confirmation password: ").strip()
+            pw2 = Password(confirm_password)
+
+
+            if pw1.value != pw2.value:
+                print("Passwords do not match. Try again.\n")
+                continue
+
+            if client.register(user, pw1, pw2, email):
+                print("\nRegistration successful. You can now log in.")
+                break
+            else:
+                print("\nRegistration failed. Try again.")
+
+        except ValidationError as e:
+            print(f"Error: {e}. Riprova.\n")
+
+
 
 
 def convert_url():
@@ -83,16 +115,12 @@ def submenu():
 
 
 
-
-def exit_message():
-    print("Uscita dal menu.")
-
-
 def main():
     menu = (
         Menu.Builder(Description("Menu di Test"))
             .with_entry(Entry.create("1", "Login",do_login))
-            .with_entry(Entry.create("0", "Logout", exit_message, is_exit=True))
+            .with_entry(Entry.create("2", "Register", do_register))
+            .with_entry(Entry.create("0", "Logout", logout, is_exit=True))
             .build()
     )
 

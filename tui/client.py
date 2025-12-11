@@ -33,13 +33,9 @@ class Backend:
         else:
             print("Logout failed")
 
-    def get_csrf_token(self):
 
-        r = self.session.get(f"{BASE_URL}/auth/registration/")
-        return self.session.cookies.get("csrftoken")
 
     def register(self, username: Username, password1: Password, password2: Password, email: Email):
-        csrf_token = self.get_csrf_token()
         response = self.session.post(
             f"{BASE_URL}/auth/registration/",
             data={
@@ -48,11 +44,23 @@ class Backend:
                 "password2": password2.value,
                 "email": email.value
 
-            },
-            headers={"X-CSRFToken": csrf_token}
+            }
         )
         if response.ok:
             return True
         else:
             print("Registration failed:", response.status_code, response.text)
             return False
+
+    def edit_password(self, old_pw, new_pw1, new_pw2, session):
+        csrf_token = self.session.cookies.get("csrftoken")
+        response = session.post(
+            f"{BASE_URL}/api/v1/auth/password/change/",
+            data={
+                "old_password": old_pw,
+                "new_password1": new_pw1,
+                "new_password2": new_pw2
+            },
+            headers={"X-CSRFToken": csrf_token}
+        )
+        return response.ok, response.text

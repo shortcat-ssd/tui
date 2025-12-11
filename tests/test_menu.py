@@ -38,6 +38,8 @@ def do_login():
 def logout():
     client.logout()
 
+#TODO: sistemare l'invio dell'email per la registrazione -> fallisce
+
 def do_register():
     print("\n--- REGISTRATION ---")
     while True:
@@ -61,7 +63,10 @@ def do_register():
 
             if client.register(user, pw1, pw2, email):
                 print("\nRegistration successful. You can now log in.")
-                break
+                if client.login(user, pw1):
+                    print("\nLogin successful.")
+                    submenu()
+                    break
             else:
                 print("\nRegistration failed. Try again.")
 
@@ -87,11 +92,24 @@ def url_info():
     print("Funzione url_info ancora da implementare.")
 
 def edit_username():
-    print("Funzione edit_username ancora da implementare.")
+    print("Funzione da implementare.")
+
+
+
+
 
 def edit_password():
-    print("Funzione edit_password ancora da implementare.")
+    old_pw = getpass("Vecchia password: ").strip()
+    new_pw1 = getpass("Nuova password: ").strip()
+    new_pw2 = getpass("Conferma nuova password: ").strip()
 
+    ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
+    if ok:
+        print("\nPassword aggiornata! Premi invio per tornare al menu.")
+    else:
+        print(f"\nErrore: {text}. Premi invio per tornare al menu.")
+
+    input("")  # Pausa prima che il menu si riavvii
 
 def submenu():
 

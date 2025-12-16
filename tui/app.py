@@ -1,5 +1,6 @@
 from getpass import getpass
 
+from pyexpat.errors import messages
 from valid8 import ValidationError
 
 from .client import Backend
@@ -30,7 +31,8 @@ def do_login():
                 print("\nWrong username or password.")
 
         except ValidationError as e:
-            print(f"Error: {e}. Riprova.\n")
+            raise ValidationError(e)
+            print(f"Error: {e}. Try again.\n")
 
 
 def do_register():
@@ -63,7 +65,7 @@ def do_register():
                 print("\nRegistration failed. Try again.")
 
         except ValidationError as e:
-            print(f"Error: {e}. Riprova.\n")
+            print(f"Error: {e}. Try Again.\n")
 
 
 def logout():
@@ -74,19 +76,19 @@ def logout():
 
 
 def convert_url():
-    print("\n--- Converti URL ---")
+    print("\n--- URL CONVERSATION ---")
 
     raw_url = input("URL: ").strip()
     if not raw_url:
-        print("URL non valido, riprova.\n")
+        print("Invalid Url, Try again.\n")
         return
 
     ok, short_url_or_error = client.createUrl(raw_url)
 
     if ok:
-        print(f"URL corto generato in app.py: {short_url_or_error}\n")
+        print(f"Short Url Created in app.py: {short_url_or_error}\n")
     else:
-        print(f"Errore nella conversione: {short_url_or_error}\n")
+        print(f"Conversion Error: {short_url_or_error}\n")
 
 
 def edit_url():
@@ -106,41 +108,41 @@ def url_info():
 
 
 def edit_username():
-    new_username = input("Nuovo username: ").strip()
+    new_username = input("New Username: ").strip()
     ok, text = client.edit_username(new_username)
     if ok:
-        print(f"\nUsername aggiornato a {new_username}! Premi invio per tornare al menu.")
+        print(f"\nUsername Updated: {new_username}! Click send to go back to the menu.")
     else:
-        print(f"\nErrore: {text}. Premi invio per tornare al menu.")
+        print(f"\nError: {text}. Click send to go back to the menu.")
     input("")
 
 
 def edit_password():
-    old_pw = getpass("Vecchia password: ").strip()
-    new_pw1 = getpass("Nuova password: ").strip()
-    new_pw2 = getpass("Conferma nuova password: ").strip()
+    old_pw = getpass("Old password: ").strip()
+    new_pw1 = getpass("New password: ").strip()
+    new_pw2 = getpass("Confirm new password: ").strip()
 
     ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
     if ok:
-        print("\nPassword aggiornata! Premi invio per tornare al menu.")
+        print("\n password updated. Click send to go back to the menu.")
     else:
-        print(f"\nErrore: {text}. Premi invio per tornare al menu.")
+        print(f"\nError: {text}. Click send to go back to the menu")
     input("")
 
 
 
 def submenu():
-    print("\n============= MENU UTENTE ==============")
+    print("\n============= USER MENU  ==============")
     menu = (
-        Menu.Builder(Description("OPZIONI UTENTE"))
-        .with_entry(Entry.create("1", "Converti URL", convert_url))
-        .with_entry(Entry.create("2", "Modifica URL", edit_url))
-        .with_entry(Entry.create("3", "Elimina URL", delete_url))
-        .with_entry(Entry.create("4", "Cronologia URL", url_history))
-        .with_entry(Entry.create("5", "Info URL", url_info))
-        .with_entry(Entry.create("6", "Modifica username", edit_username))
-        .with_entry(Entry.create("7", "Modifica password", edit_password))
-        .with_entry(Entry.create("0", "Logout", logout, is_exit=True))
+        Menu.Builder(Description("USER OPTIONS"))
+        .with_entry(Entry.create("1", "CONVERT URL", convert_url))
+        .with_entry(Entry.create("2", "EDIT URL", edit_url))
+        .with_entry(Entry.create("3", "DELETE URL", delete_url))
+        .with_entry(Entry.create("4", "CHRONOLOGY URL", url_history))
+        .with_entry(Entry.create("5", "INFO URL", url_info))
+        .with_entry(Entry.create("6", "EDIT USERNAME", edit_username))
+        .with_entry(Entry.create("7", "EDIT PAASWORD", edit_password))
+        .with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
         .build()
     )
     menu.run()
@@ -149,9 +151,9 @@ def submenu():
 
 def main():
     menu = (
-        Menu.Builder(Description("MENU PRINCIPALE"))
+        Menu.Builder(Description("MENU"))
         .with_entry(Entry.create("1", "Login", do_login))
-        .with_entry(Entry.create("2", "Register", do_register))
+        .with_entry(Entry.create("2", "Registration", do_register))
         .with_entry(Entry.create("0", "Exit", logout, is_exit=True))
         .build()
     )

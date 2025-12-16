@@ -19,7 +19,6 @@ def do_login():
             user = Username(raw_user)
             print(f"DEBUG: username ok: {user}")
 
-            #raw_pass = input("Password: ").strip()
             raw_pass = getpass("Password: ").strip()
             pw = Password(raw_pass)
 

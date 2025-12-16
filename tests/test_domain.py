@@ -28,7 +28,7 @@ def test_logout_success(backend):
         backend.logout()
         mock_logout.assert_called_once()
 
-"""
+
 def test_register_success(backend):
     with patch.object(backend, "register", return_value=True) as mocked:
         result = backend.register(
@@ -38,7 +38,7 @@ def test_register_success(backend):
             Email("user@test.com"),
         )
         mocked.assert_called_once()
-        assert result is True"""
+        assert result is True
 
 
 def test_email_is_valid():

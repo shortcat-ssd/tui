@@ -12,8 +12,6 @@ def backend():
 
 
 
-
-
 def test_login_success(backend):
     username = Username("Persona")
     password = Password("Persona88!")

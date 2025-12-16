@@ -95,7 +95,13 @@ def url_info():
 
 
 def edit_username():
-    print("Funzione edit_username ancora da implementare.")
+    new_username = input("Nuovo username: ").strip()
+    ok, text = client.edit_username(new_username)
+    if ok:
+        print(f"\nUsername aggiornato a {new_username}! Premi invio per tornare al menu.")
+    else:
+        print(f"\nErrore: {text}. Premi invio per tornare al menu.")
+    input("")
 
 
 def edit_password():

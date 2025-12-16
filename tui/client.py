@@ -75,3 +75,21 @@ class Backend:
                 return False, response.json()
             except:
                 return False, response.text
+
+
+
+    def edit_username(self, new_username: Username):
+        csrf_token = self.session.cookies.get("csrftoken")
+        response = self.session.patch(
+            f"{BASE_URL}/auth/user/",
+            json={"username": new_username},
+            headers={"X-CSRFToken": csrf_token}
+        )
+        if response.ok:
+            return True, "Username changed successfully"
+        else:
+            try:
+                return False, response.json()
+            except:
+                return False, response.text
+

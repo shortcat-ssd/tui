@@ -74,7 +74,19 @@ def logout():
 
 
 def convert_url():
-    print("Funzione convert_url ancora da implementare.")
+    print("\n--- Converti URL ---")
+
+    raw_url = input("URL: ").strip()
+    if not raw_url:
+        print("URL non valido, riprova.\n")
+        return
+
+    ok, short_url_or_error = client.createUrl(raw_url)
+
+    if ok:
+        print(f"URL corto generato in app.py: {short_url_or_error}\n")
+    else:
+        print(f"Errore nella conversione: {short_url_or_error}\n")
 
 
 def edit_url():

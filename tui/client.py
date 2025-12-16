@@ -1,6 +1,6 @@
 import requests
 
-from tui.domain import Username, Password, Email
+from tui.domain import Username, Password, Email, ShortUrl
 
 BASE_URL = "http://localhost:8000/api/v1"
 
@@ -93,3 +93,24 @@ class Backend:
             except:
                 return False, response.text
 
+
+    def createUrl(self, url: ShortUrl):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.post(
+                f"{BASE_URL}/shorts/",
+                data={"target": url},
+                headers={"X-CSRFToken": csrf_token}
+            )
+            if response.ok:
+                data = response.json()  # trasforma la stringa JSON in dict
+                short_code = data.get("code")  # prendi solo il codice
+                short_url = f"{BASE_URL}/{short_code}"  # costruisci l'URL completo
+                return True, short_url
+            else:
+                return False, f"{response.status_code}: {response.text}"
+
+
+
+        except Exception as e:
+            return False, str(e)

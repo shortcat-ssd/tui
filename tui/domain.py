@@ -1,9 +1,11 @@
 import re
+from typing import Optional
 
 from tui.menu import is_alphanumeric
 from valid8 import validate
 from typeguard import typechecked
 from dataclasses import dataclass
+from datetime import datetime
 
 
 def is_alphanumeric(value: str) -> bool:
@@ -52,3 +54,25 @@ class Email:
     value: str
     def __post_init__(self):
         validate('Email.value', self.value, min_length=5, max_length=50, custom=is_email)
+
+@typechecked
+@dataclass(frozen=True)
+class ShortUrl:
+    code: str
+    label: str
+    target: str
+    user: str
+    private: bool = False
+    expired_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+    @property
+    def is_expired(self) -> bool:
+        if self.expired_at is None:
+            return False
+        return self.expired_at <= datetime.now()
+
+    def __str__(self):
+        return f"{self.code} -> {self.target}"

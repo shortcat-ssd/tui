@@ -52,15 +52,26 @@ class Backend:
             print("Registration failed:", response.status_code, response.text)
             return False
 
-    def edit_password(self, old_pw, new_pw1, new_pw2, session):
+
+    def edit_password(self, old_pw, new_pw1, new_pw2):
+        if new_pw1 != new_pw2:
+            return False, "New passwords do not match"
+
         csrf_token = self.session.cookies.get("csrftoken")
-        response = session.post(
-            f"{BASE_URL}/api/v1/auth/password/change/",
-            data={
+        response = self.session.post(
+            f"{BASE_URL}/auth/password/change/",
+            json={
                 "old_password": old_pw,
                 "new_password1": new_pw1,
                 "new_password2": new_pw2
             },
             headers={"X-CSRFToken": csrf_token}
         )
-        return response.ok, response.text
+
+        if response.ok:
+            return True, "Password changed successfully"
+        else:
+            try:
+                return False, response.json()
+            except:
+                return False, response.text

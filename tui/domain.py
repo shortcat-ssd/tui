@@ -22,8 +22,9 @@ def is_strong_password(value: str) -> bool:
     return bool(re.fullmatch(pattern, value))
 
 
+
 def is_email(value: str) -> bool:
-    pattern = r'^[a-z0-9]+@[a-z0-9]+(\.[a-z0-9]+)+$'
+    pattern = r'^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$'
     return bool(re.fullmatch(pattern, value))
 
 @typechecked

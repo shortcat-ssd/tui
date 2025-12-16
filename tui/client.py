@@ -103,9 +103,9 @@ class Backend:
                 headers={"X-CSRFToken": csrf_token}
             )
             if response.ok:
-                data = response.json()  # trasforma la stringa JSON in dict
-                short_code = data.get("code")  # prendi solo il codice
-                short_url = f"{BASE_URL}/{short_code}"  # costruisci l'URL completo
+                data = response.json()
+                short_code = data.get("code")
+                short_url = f"http://localhost:8000/{short_code}"
                 return True, short_url
             else:
                 return False, f"{response.status_code}: {response.text}"

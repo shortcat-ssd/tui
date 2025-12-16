@@ -4,7 +4,7 @@ from pyexpat.errors import messages
 from valid8 import ValidationError
 
 from .client import Backend
-from .domain import Username, Password, Email
+from .domain import Username, Password, Email, ShortUrl
 from .menu import Menu, Entry, Description, Key
 
 
@@ -92,7 +92,7 @@ def convert_url():
 
 
 def edit_url():
-    print("Funzione edit_url ancora da implementare.")
+    editmenu()
 
 
 def delete_url():
@@ -100,7 +100,9 @@ def delete_url():
 
 
 def url_history():
-    print("Funzione url_history ancora da implementare.")
+    lista: list[ShortUrl]  = client.getShortUrl()
+    print(lista)
+
 
 
 def url_info():
@@ -128,7 +130,31 @@ def edit_password():
     else:
         print(f"\nError: {text}. Click send to go back to the menu")
     input("")
+def modify_target():
+    pass
 
+def modify_label():
+    pass
+
+def modify_visibility():
+    pass
+
+def modify_expire():
+    pass
+
+
+def editmenu():
+    print("\n============= EDIT MENU ==============")
+    menu = (
+        Menu.Builder(Description("EDIT URL"))
+        .with_entry(Entry.create("1", "TARGET", modify_target))
+        .with_entry(Entry.create("2", "LABEL", modify_label))
+        .with_entry(Entry.create("3", "PRIVATE", modify_visibility))
+        .with_entry(Entry.create("4", "EXPIRE AT", modify_expire))
+        .with_entry(Entry.create("0", "Logout", logout, is_exit=True))
+        .build()
+    )
+    menu.run()
 
 
 def submenu():

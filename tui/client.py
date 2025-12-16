@@ -76,6 +76,26 @@ class Backend:
             except:
                 return False, response.text
 
+    def edit_target(self, new_target: str):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.post(
+                f"{BASE_URL}/shorts/{new_target}/",
+                data={"target": new_target},
+                headers={"X-CSRFToken": csrf_token}
+            )
+            if response.ok:
+                data = response.json()
+                short_code = data.get("code")
+                short_url = f"http://localhost:8000/{short_code}"
+                return True, short_url
+            else:
+                return False, f"{response.status_code}: {response.text}"
+
+
+
+        except Exception as e:
+            return False, str(e)
 
 
     def edit_username(self, new_username: Username):
@@ -114,3 +134,25 @@ class Backend:
 
         except Exception as e:
             return False, str(e)
+
+    def getShortUrl(self):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.get(
+                f"{BASE_URL}/shorts/",
+                headers={"X-CSRFToken": csrf_token}
+            )
+
+            if response.ok:
+                data = response.json()
+
+                short_urls = "\n".join(
+        f"http://localhost:8000/{item['code']}" for item in data
+    )
+                return short_urls
+            else:
+                return False, f"{response.status_code}: {response.text}"
+
+        except Exception as e:
+            return False, str(e)
+

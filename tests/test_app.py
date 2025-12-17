@@ -1,8 +1,10 @@
 from unittest.mock import patch, MagicMock
 
+from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
 from tui.app import do_login, do_register, logout, edit_password, edit_url
 from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
 
@@ -297,3 +299,128 @@ def test_delete_url_success(mock_urls_to_dict, mock_show, mock_client, mock_prin
     mock_client.deleteUrl.return_value = (True, "Deleted")
     delete_url()
     mock_print.assert_called_with("Deleted")
+
+
+@patch('tui.app.client.edit_visibility')
+@patch('tui.app.validate_private', return_value=True)
+@patch('builtins.input', return_value="yes")
+@patch('tui.app.same_method', return_value="short123")
+def test_modify_visibility_true_decorator(mock_same, mock_input, mock_val, mock_edit):
+    modify_visibility()
+
+
+    mock_edit.assert_called_once_with("short123", True)
+
+@patch('tui.app.client.edit_visibility')
+@patch('tui.app.validate_private', return_value=False)
+@patch('builtins.input', return_value="no")
+@patch('tui.app.same_method', return_value="short123")
+def test_modify_visibility_false_decorator(mock_same, mock_input, mock_val, mock_edit):
+    modify_visibility()
+
+    mock_edit.assert_called_once_with("short123", False)
+
+
+from unittest.mock import patch, MagicMock
+from tui.app import same_method
+
+
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('builtins.input')
+@patch('tui.app.client.getShortUrl')
+def test_same_method_success(mock_get_url, mock_input, mock_urls_to_dict, mock_show):
+    fake_item = MagicMock(label="MyLink")
+    fake_dict = {1: fake_item}
+
+
+    mock_get_url.return_value = (True, ["raw_list"])
+    mock_urls_to_dict.return_value = fake_dict
+    mock_input.return_value = "1"
+
+    result = same_method()
+
+
+    assert result == fake_item
+    mock_show.assert_called_once()
+
+
+@patch('builtins.print')
+@patch('tui.app.client.getShortUrl')
+def test_same_method_api_error(mock_get_url, mock_print):
+    mock_get_url.return_value = (False, "Network Error")
+    result = same_method()
+    assert result is None 
+    mock_print.assert_called_with("Error fetching URLs:", "Network Error")
+
+
+
+
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('builtins.input')
+@patch('builtins.print')
+@patch('tui.app.client.getShortUrl')
+def test_same_method_invalid_digit(mock_get_url, mock_print, mock_input, mock_to_dict, mock_show):
+    mock_get_url.return_value = (True, [])
+    mock_to_dict.return_value = {}
+    mock_input.return_value = "abc"
+
+
+    result = same_method()
+
+
+    assert result is None
+    mock_print.assert_called_with("Invalid input. Please enter a number.")
+
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('builtins.input')
+@patch('builtins.print')
+@patch('tui.app.client.getShortUrl')
+def test_same_method_out_of_range(mock_get_url, mock_print, mock_input, mock_to_dict, mock_show):
+
+    fake_dict = {1: "item1", 2: "item2"}
+    mock_get_url.return_value = (True, [])
+    mock_to_dict.return_value = fake_dict
+    mock_input.return_value = "5"
+
+
+    result = same_method()
+
+    assert result is None
+    mock_print.assert_called_with("Invalid choice. Number out of range.")
+
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('tui.app.client')
+def test_url_history_success(mock_client, mock_urls_to_dict, mock_show):
+
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    url_history()
+
+    mock_urls_to_dict.assert_called_once_with([mock_url_item])
+
+    mock_show.assert_called_once_with({1: mock_url_item})
+
+
+@patch('builtins.input', side_effect=['1', 'y'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+def test_delete_url_failure(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    mock_client.deleteUrl.return_value = (False, "Some error")
+
+    delete_url()
+
+    mock_print.assert_any_call("Error:", "Some error")

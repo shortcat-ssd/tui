@@ -35,7 +35,7 @@ def do_login():
             else:
                 print("\nWrong username or password.")
 
-        except ValidationError as e:
+        except ValueError as e:
             print(f"Error: {e}. Try again.\n")
 
 
@@ -85,11 +85,11 @@ def convert_url():
     expiry_str = input("Expiry Date and Time (YYYY-MM-DD HH:MM, optional): ").strip()
     private_input = input("Private (yes/no): ").strip().lower()
 
-    # Conversione input booleano
+
     private = private_input in ["yes", "y", "true", "1"]
 
     try:
-        # Validazioni
+
         raw_url = validate_url(raw_url)
         raw_label = validate_label(raw_label)
         private = validate_private(private)
@@ -107,7 +107,7 @@ def convert_url():
         print(f"Error in input: {e}")
         return
 
-    # Creazione short URL
+
     s = short(raw_url, raw_label, expiry_datetime, private)
     ok, short_url_or_error = client.createUrl(s)
 

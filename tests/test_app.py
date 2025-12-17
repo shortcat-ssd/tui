@@ -1,9 +1,9 @@
 from unittest.mock import patch
 
-from tui.app import do_login, do_register, logout, edit_password, convert_url
-
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url
 
 from tui.domain import short
+
 
 
 @patch('tui.app.submenu')
@@ -99,9 +99,7 @@ def test_do_register_passwords_do_not_match(
 def test_convert_url_success(mock_input, mock_print, mock_client):
     mock_client.createUrl.return_value = (True, "http://short.url/abc123")
 
-
     convert_url()
-
 
     assert mock_client.createUrl.called
 
@@ -112,3 +110,66 @@ def test_convert_url_success(mock_input, mock_print, mock_client):
 
     short_obj_passed = mock_client.createUrl.call_args[0][0]
     assert isinstance(short_obj_passed, type(short("", "", "", False)))
+
+class ValidationError(Exception):
+    pass
+
+"""
+@patch('builtins.input', side_effect=[' ', 'label','2026-09-09 09:09', "yes"])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.validate_url', side_effect=ValidationError("dummy"))
+def test_convert_url_fail(mock_validate_url, mock_client, mock_print, mock_input):
+
+    convert_url()
+
+
+    mock_client.createUrl.assert_not_called()
+
+    assert any("dummy" in str(call) for call in mock_print.call_args_list)
+"""
+
+
+@patch('builtins.input', side_effect=['https://example.com', 'label', '2026-99-99 99:99', 'yes'])
+@patch('builtins.print')
+@patch('tui.app.client')
+def test_convert_url_invalid_date(mock_client, mock_print, mock_input):
+    convert_url()
+
+    mock_client.createUrl.assert_not_called()
+
+    printed_messages = [str(call) for call in mock_print.call_args_list]
+    assert any("Invalid date format" in msg for msg in printed_messages)
+
+
+@patch('builtins.input', side_effect=['user1', 'user1@example.com', KeyboardInterrupt])
+@patch('tui.app.getpass', side_effect=['Password1!', 'Password1!'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.submenu')
+def test_do_register_client_fail(mock_submenu, mock_client, mock_print, mock_getpass, mock_input):
+
+    mock_client.register.return_value = False
+
+
+    try:
+        do_register()
+    except KeyboardInterrupt:
+        pass
+
+    mock_client.register.assert_called_once()
+
+
+    mock_client.login.assert_not_called()
+    mock_submenu.assert_not_called()
+
+
+    printed_messages = [str(call) for call in mock_print.call_args_list]
+    assert any("Registration failed" in msg for msg in printed_messages)
+
+
+@patch('tui.app.editmenu')
+def test_edit_url_calls_editmenu(mock_editmenu):
+    edit_url()
+
+    mock_editmenu.assert_called_once()

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from tui.app import do_login, do_register, logout, edit_password
+from tui.app import do_login, do_register, logout, edit_password, edit_url
 
 
 

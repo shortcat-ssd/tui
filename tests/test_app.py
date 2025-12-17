@@ -1,10 +1,9 @@
 from unittest.mock import patch, MagicMock
 
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
-from tui.app import do_login, do_register, logout, edit_password, edit_url
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
+from tui.app import  modify_visibility, same_method
+
+from tui.app import  modify_label
+from tui.app import do_login, do_register, logout, convert_url, edit_url, delete_url, url_history, editmenu
 
 from tui.domain import short
 
@@ -321,8 +320,6 @@ def test_modify_visibility_false_decorator(mock_same, mock_input, mock_val, mock
     mock_edit.assert_called_once_with("short123", False)
 
 
-from unittest.mock import patch, MagicMock
-from tui.app import same_method
 
 
 @patch('tui.app.show_urls_dict')
@@ -424,3 +421,24 @@ def test_delete_url_failure(mock_urls_to_dict, mock_show, mock_client, mock_prin
     delete_url()
 
     mock_print.assert_any_call("Error:", "Some error")
+
+
+@patch('tui.app.Menu.Builder')
+def test_editmenu_runs_menu(mock_builder_class):
+
+    mock_builder_instance = MagicMock()
+    mock_builder_class.return_value = mock_builder_instance
+
+
+    mock_builder_instance.with_entry.return_value = mock_builder_instance
+    menu_mock = MagicMock(name="menu_instance")
+    mock_builder_instance.build.return_value = menu_mock
+
+    with patch('builtins.print') as mock_print:
+        editmenu()
+
+
+    mock_print.assert_called_with("\n============= EDIT MENU ==============")
+
+
+    menu_mock.run.assert_called_once()

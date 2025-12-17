@@ -1,14 +1,21 @@
 from unittest.mock import patch, MagicMock
 
 from tui.app import  modify_visibility, same_method
+from unittest.mock import patch, MagicMock
+from datetime import datetime
 
 from tui.app import  modify_label
-from tui.app import do_login, do_register, logout, convert_url, edit_url, delete_url, url_history, editmenu
+from tui.app import do_login, do_register, logout, convert_url, edit_url, delete_url, url_history, editmenu, modify_expire
 from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility, \
     urls_to_dict
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
 from tui.app import do_login, do_register, logout, edit_password, edit_url
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
+from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, edit_username
+from tui.app import  same_method
+
+
+from tui.app import  editmenu
+from tui.app import modify_visibility,urls_to_dict, modify_label, submenu
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
@@ -535,39 +542,23 @@ def test_show_urls_dict_short_no_date(capsys):
 
     assert "N/A" in captured.out
 
-
-from unittest.mock import patch
-from tui.app import edit_username
-
-
-# --- CASO POSITIVO (SUCCESS) ---
-# Copre il ramo IF: API risponde True -> Stampa successo
-
-@patch('tui.app.client.edit_username')  # Mock API
-@patch('tui.app.Username')  # Mock della classe di dominio
-@patch('builtins.input')  # Mock input utente
+@patch('tui.app.client.edit_username')
+@patch('tui.app.Username')
+@patch('builtins.input')
 def test_edit_username_success(mock_input, mock_username_cls, mock_edit, capsys):
-    # SETUP
-    # 1. input viene chiamato DUE volte:
-    #    - Prima volta: Inserisce il nuovo username "NewName"
-    #    - Seconda volta: Preme Invio alla fine ("")
+
     mock_input.side_effect = ["NewName", ""]
 
-    # 2. Quando viene chiamato Username("NewName"), facciamo restituire la stringa stessa
-    #    Così quando viene stampata nell'f-string, leggiamo "NewName" e non <MagicMock...>
     mock_username_cls.side_effect = lambda x: x
 
-    # 3. L'API risponde con successo
     mock_edit.return_value = (True, "Success message")
 
-    # ESECUZIONE
+
     edit_username()
 
-    # VERIFICHE
-    # Verifica che il client sia stato chiamato con "NewName"
+
     mock_edit.assert_called_once_with("NewName")
 
-    # Verifica il messaggio di stampa
     captured = capsys.readouterr()
     assert "Username Updated: NewName!" in captured.out
 
@@ -578,8 +569,8 @@ def test_edit_username_success(mock_input, mock_username_cls, mock_edit, capsys)
 @patch('builtins.input')
 def test_edit_username_failure(mock_input, mock_username_cls, mock_edit, capsys):
 
-    mock_input.side_effect = ["BadName", ""]  # Username inserito e poi Invio
-    mock_username_cls.side_effect = lambda x: x  # Username("BadName") -> "BadName"
+    mock_input.side_effect = ["BadName", ""]
+    mock_username_cls.side_effect = lambda x: x
 
     mock_edit.return_value = (False, "Username already taken")
 
@@ -591,41 +582,30 @@ def test_edit_username_failure(mock_input, mock_username_cls, mock_edit, capsys)
     assert "Error: Username already taken" in captured.out
 
 
-from unittest.mock import patch
-from tui.app import edit_password
 
 
-# --- CASO POSITIVO (SUCCESS) ---
-# Copre il flusso: getpass x3 -> Password x3 -> API OK -> Print Success -> Input
 
-@patch('tui.app.client.edit_password')  # Mock chiamata API
-@patch('tui.app.Password')  # Mock classe di dominio
-@patch('tui.app.getpass')  # Mock input nascosto
-@patch('builtins.input')  # Mock input finale (pausa)
+
+@patch('tui.app.client.edit_password')
+@patch('tui.app.Password')
+@patch('tui.app.getpass')
+@patch('builtins.input')
 def test_edit_password_success(mock_input, mock_getpass, mock_pw_cls, mock_edit, capsys):
-    # SETUP
-    # 1. getpass viene chiamato 3 volte. Definiamo la sequenza di risposte:
     mock_getpass.side_effect = ["OldPass", "NewPass", "NewPass"]
 
-    # 2. Quando il codice fa Password("OldPass"), facciamo restituire la stringa "OldPass"
-    #    Così è più facile verificare con cosa è stato chiamato il client.
+
     mock_pw_cls.side_effect = lambda x: x
 
-    # 3. Il client risponde con successo (True)
     mock_edit.return_value = (True, "Success msg")
 
-    # ESECUZIONE
     edit_password()
 
-    # VERIFICHE
-    # Verifica che il client sia stato chiamato con le 3 password corrette
+
     mock_edit.assert_called_once_with("OldPass", "NewPass", "NewPass")
 
-    # Verifica il messaggio di successo stampato
     captured = capsys.readouterr()
     assert "Password updated" in captured.out
 
-    # Verifica che sia stato chiamato l'input finale per la pausa
     mock_input.assert_called_once()
 
 
@@ -647,3 +627,113 @@ def test_edit_password_failure(mock_input, mock_getpass, mock_pw_cls, mock_edit,
 
     captured = capsys.readouterr()
     assert "Error: Passwords do not match" in captured.out
+
+
+
+
+@patch('tui.app.client.edit_expire')
+@patch('tui.app.validate_expired_at')
+@patch('builtins.input')
+@patch('tui.app.same_method')
+def test_modify_expire_success(mock_same, mock_input, mock_val, mock_edit, capsys):
+    fake_url = "short123"
+    fake_date_str = "2025-12-31 23:59"
+
+    expected_dt = datetime.strptime(fake_date_str, "%Y-%m-%d %H:%M")
+
+    mock_same.return_value = fake_url
+    mock_input.return_value = fake_date_str
+
+    mock_val.side_effect = lambda x: x
+
+    mock_edit.return_value = (True, "OK")
+
+    modify_expire()
+
+    mock_edit.assert_called_once_with(fake_url, expected_dt)
+
+    captured = capsys.readouterr()
+    assert "Updated expiration date!" in captured.out
+
+
+
+
+@patch('tui.app.client.edit_expire')
+@patch('builtins.input')
+@patch('tui.app.same_method')
+def test_modify_expire_no_selection(mock_same, mock_input, mock_edit):
+    mock_same.return_value = None  # Nessun URL selezionato
+
+    modify_expire()
+
+    mock_input.assert_not_called()  # Esce prima dell'input
+    mock_edit.assert_not_called()
+
+@patch('tui.app.client.edit_expire')
+@patch('builtins.input')
+@patch('tui.app.same_method')
+def test_modify_expire_cancel(mock_same, mock_input, mock_edit):
+    mock_same.return_value = "short123"
+    mock_input.return_value = "0"  # Utente annulla
+
+
+    modify_expire()
+
+
+    mock_edit.assert_not_called()
+
+@patch('tui.app.client.edit_expire')
+@patch('tui.app.validate_expired_at')
+@patch('builtins.input')
+@patch('tui.app.same_method')
+def test_modify_expire_bad_format(mock_same, mock_input, mock_val, mock_edit, capsys):
+
+    mock_same.return_value = "short123"
+    mock_input.return_value = "non-una-data"  # Formato sbagliato
+
+
+    modify_expire()
+
+    mock_val.assert_not_called()
+    mock_edit.assert_not_called()
+
+    captured = capsys.readouterr()
+    assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
+
+
+
+
+@patch('tui.app.client.edit_expire')
+@patch('tui.app.validate_expired_at')
+@patch('builtins.input')
+@patch('tui.app.same_method')
+def test_modify_expire_api_fail(mock_same, mock_input, mock_val, mock_edit, capsys):
+    mock_same.return_value = "short123"
+    mock_input.return_value = "2025-01-01 12:00"
+    mock_val.side_effect = lambda x: x
+
+    mock_edit.return_value = (False, "Date cannot be in the past")
+
+    modify_expire()
+
+    mock_edit.assert_called_once()
+    captured = capsys.readouterr()
+    assert "Error: Date cannot be in the past" in captured.out
+@patch('tui.app.Menu.Builder')
+def test_submenu_runs_menu(mock_builder_class):
+    mock_builder_instance = MagicMock()
+    mock_builder_class.return_value = mock_builder_instance
+
+
+    mock_builder_instance.with_entry.return_value = mock_builder_instance
+    menu_mock = MagicMock(name="menu_instance")
+    mock_builder_instance.build.return_value = menu_mock
+
+    # Patch di print
+    with patch('builtins.print') as mock_print:
+        submenu()
+
+    mock_print.assert_called_with("\n============= USER MENU  ==============")
+
+
+    menu_mock.run.assert_called_once()

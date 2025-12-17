@@ -77,3 +77,15 @@ class ShortUrl:
 
     def __str__(self):
         return f"{self.code} -> {self.target}"
+
+@typechecked
+@dataclass(frozen=True)
+class short:
+    target: str
+    label: str
+    expired_at: Optional[datetime] = None
+    private: bool = False
+
+
+    def __str__(self):
+        return f"{self.target}"

@@ -1,6 +1,6 @@
 import requests
 
-from tui.domain import Username, Password, Email, ShortUrl
+from tui.domain import Username, Password, Email, ShortUrl, short
 
 BASE_URL = "http://localhost:8000/api/v1"
 
@@ -113,7 +113,62 @@ class Backend:
             except:
                 return False, response.text
 
+    def createUrl(self, url: short):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.post(
+                f"{BASE_URL}/shorts/",
+                data={"target": url.target,
+                      "label": url.label,
+                      "expired_at": url.expired_at,
+                      "private": url.private,},
+                headers={"X-CSRFToken": csrf_token}
+            )
+            if response.ok:
+                data = response.json()
+                short_code = data.get("code")
+                short_url = f"http://localhost:8000/{short_code}"
+                return True, short_url
+            else:
+                return False, f"{response.status_code}: {response.text}"
 
+        except Exception as e:
+            return False, str(e)
+
+
+
+    def getShortUrl(self):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.get(
+                f"{BASE_URL}/shorts/",
+                headers={"X-CSRFToken": csrf_token}
+            )
+
+            if response.ok:
+                data = response.json()  # lista di dizionari dal backend
+
+                # Convertiamo in lista di dict con i campi che ci interessano
+                short_urls = [
+                    {
+                        "code": item.get("code"),
+                        "target": item.get("target"),
+                        "label": item.get("label", ""),
+                        "visibility": "Private" if item.get("private") else "Public",
+                        "expire": item.get("expired_at", "∞")
+                    }
+                    for item in data
+                ]
+                return True, short_urls
+            else:
+                return False, f"{response.status_code}: {response.text}"
+
+        except Exception as e:
+            return False, str(e)
+
+
+
+"""
     def createUrl(self, url: ShortUrl):
         try:
             csrf_token = self.session.cookies.get("csrftoken")
@@ -135,24 +190,5 @@ class Backend:
         except Exception as e:
             return False, str(e)
 
-    def getShortUrl(self):
-        try:
-            csrf_token = self.session.cookies.get("csrftoken")
-            response = self.session.get(
-                f"{BASE_URL}/shorts/",
-                headers={"X-CSRFToken": csrf_token}
-            )
 
-            if response.ok:
-                data = response.json()
-
-                short_urls = "\n".join(
-        f"http://localhost:8000/{item['code']}" for item in data
-    )
-                return short_urls
-            else:
-                return False, f"{response.status_code}: {response.text}"
-
-        except Exception as e:
-            return False, str(e)
-
+"""

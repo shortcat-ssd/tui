@@ -4,8 +4,9 @@ from pyexpat.errors import messages
 from valid8 import ValidationError
 
 from .client import Backend
-from .domain import Username, Password, Email, ShortUrl
+from .domain import Username, Password, Email, ShortUrl, short
 from .menu import Menu, Entry, Description, Key
+from datetime import datetime
 
 
 client = Backend()
@@ -79,11 +80,35 @@ def convert_url():
     print("\n--- URL CONVERSATION ---")
 
     raw_url = input("URL: ").strip()
+    raw_label = input("Label: ").strip()
+    expiry_str = input("Expiry Date and Time (YYYY-MM-DD HH:MM, optional): ").strip()
+
+    private_input = input("Private (yes/no): ").strip().lower()
+
+    if private_input in ["yes", "y", "true", "1"]:
+        private = True
+    else:
+        private = False
+
+    print(private)
+
     if not raw_url:
         print("Invalid Url, Try again.\n")
         return
 
-    ok, short_url_or_error = client.createUrl(raw_url)
+    expiry_datetime = None
+    if expiry_str:
+        try:
+            expiry_datetime = datetime.strptime(expiry_str, "%Y-%m-%d %H:%M")
+        except ValueError:
+            print("Invalid date format. Use YYYY-MM-DD HH:MM\n")
+            return
+
+    s = short(raw_url, raw_label, expiry_datetime, private)
+    ok, short_url_or_error = client.createUrl(s)
+
+
+   # ok, short_url_or_error = client.createUrl(raw_url)
 
     if ok:
         print(f"Short Url Created in app.py: {short_url_or_error}\n")
@@ -101,8 +126,28 @@ def delete_url():
 
 def url_history():
     lista: list[ShortUrl]  = client.getShortUrl()
-    print(lista)
+    show_urls(lista)
 
+
+
+
+def show_urls(lista):
+    if not lista:
+        print("Nessun URL trovato.\n")
+        return
+
+    only_lista = lista[1]
+    #print(only_lista)
+
+    for url in only_lista:
+        #print("Oggetto", url, end="\n")
+        code = url["code"]
+        visibility = url["visibility"]
+        expire = url["expire"]
+        target = url["target"]
+        label = url["label"]
+
+        print("CODE", code,"VISIBILITY", visibility, "EXPIRE", expire,"TARGET", target, "LABEL", label, end="\n")
 
 
 def url_info():

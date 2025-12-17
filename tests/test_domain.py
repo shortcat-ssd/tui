@@ -17,6 +17,18 @@ def test_is_expired_when_none():
     )
     assert s.is_expired is False
 
+def test_is_expired_goes_through_not_none_branch():
+    s = ShortUrl(
+        code="cX",
+        label="lab",
+        target="http://a.it",
+        user="u",
+        expired_at=datetime(2099, 1, 1, 0, 0, 0),  # sicuramente NON None
+    )
+
+    assert s.expired_at is not None          # 🔒 prova che stai nel ramo giusto
+    _ = s.is_expired
+
 
 def test_is_expired_false_when_in_future():
     s = ShortUrl(

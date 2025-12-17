@@ -389,3 +389,126 @@ def test_edit_label_success(backend):
     assert msg == "Label changed successfully"
 
 
+def test_edit_expire_fail_branch(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.patch.return_value
+    resp.ok = False
+    resp.status_code = 500
+    resp.text = "boom"
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.edit_expire(s, datetime(2030, 1, 1, 12, 0, 0))
+
+    assert ok is False
+    assert msg == "500: boom"
+
+
+def test_edit_expire_exception_branch(backend):
+    backend.session.patch.side_effect = Exception("timeout")
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.edit_expire(s, datetime(2030, 1, 1, 12, 0, 0))
+
+    assert ok is False
+    assert msg == "timeout"
+
+
+
+def test_edit_label_fail_branch(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.patch.return_value
+    resp.ok = False
+    resp.status_code = 400
+    resp.text = "bad request"
+
+    class Dummy:
+        code = "abc123"
+
+    ok, msg = backend.edit_label("NEW", Dummy())
+
+    assert ok is False
+    assert msg == "400: bad request"
+
+
+def test_edit_label_exception_branch(backend):
+    backend.session.patch.side_effect = Exception("network down")
+
+    class Dummy:
+        code = "abc123"
+
+    ok, msg = backend.edit_label("NEW", Dummy())
+
+    assert ok is False
+    assert msg == "network down"
+
+
+
+def test_create_url_fail_branch(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.post.return_value
+    resp.ok = False
+    resp.status_code = 400
+    resp.text = "bad request"
+
+    s = short(target="http://a.it", label="lab", expired_at=None, private=False)
+    ok, msg = backend.createUrl(s)
+
+    assert ok is False
+    assert msg == "400: bad request"
+
+
+def test_create_url_exception_branch(backend):
+    backend.session.post.side_effect = Exception("boom")
+
+    s = short(target="http://a.it", label="lab", expired_at=None, private=False)
+    ok, msg = backend.createUrl(s)
+
+    assert ok is False
+    assert msg == "boom"
+
+
+def test_delete_url_fail_branch(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.delete.return_value
+    resp.ok = False
+    resp.status_code = 404
+    resp.text = "not found"
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.deleteUrl(s)
+
+    assert ok is False
+    assert msg == "404: not found"
+
+
+def test_delete_url_exception_branch(backend):
+    backend.session.delete.side_effect = Exception("kaboom")
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.deleteUrl(s)
+
+    assert ok is False
+    assert msg == "kaboom"
+
+
+
+def test_get_short_url_fail_branch(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.get.return_value
+    resp.ok = False
+    resp.status_code = 403
+    resp.text = "forbidden"
+
+    ok, msg = backend.getShortUrl()
+
+    assert ok is False
+    assert msg == "403: forbidden"
+
+
+def test_get_short_url_exception_branch(backend):
+    backend.session.get.side_effect = Exception("timeout")
+
+    ok, msg = backend.getShortUrl()
+
+    assert ok is False
+    assert msg == "timeout"

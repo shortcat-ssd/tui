@@ -2,6 +2,9 @@ from unittest.mock import patch, MagicMock
 
 from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
+from tui.app import do_login, do_register, logout, edit_password, edit_url
+from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
 
@@ -388,3 +391,36 @@ def test_same_method_out_of_range(mock_get_url, mock_print, mock_input, mock_to_
     assert result is None
     mock_print.assert_called_with("Invalid choice. Number out of range.")
 
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('tui.app.client')
+def test_url_history_success(mock_client, mock_urls_to_dict, mock_show):
+
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    url_history()
+
+    mock_urls_to_dict.assert_called_once_with([mock_url_item])
+
+    mock_show.assert_called_once_with({1: mock_url_item})
+
+
+@patch('builtins.input', side_effect=['1', 'y'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+def test_delete_url_failure(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    mock_client.deleteUrl.return_value = (False, "Some error")
+
+    delete_url()
+
+    mock_print.assert_any_call("Error:", "Some error")

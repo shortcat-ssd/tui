@@ -184,3 +184,208 @@ def test_get_short_url_success(backend):
     assert len(urls) == 2
     assert urls[0].code == "c1"
     assert urls[1].private is True
+
+def test_edit_password_fail_returns_json(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.post.return_value
+    resp.ok = False
+    resp.json.return_value = {"detail": "err"}
+
+    ok, msg = backend.edit_password("OldPass1!", "NewPass1!", "NewPass1!")
+    assert ok is False
+    assert msg == {"detail": "err"}
+
+
+def test_edit_password_fail_returns_text_when_json_raises(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.post.return_value
+    resp.ok = False
+    resp.json.side_effect = Exception("no json")
+    resp.text = "server error"
+
+    ok, msg = backend.edit_password("OldPass1!", "NewPass1!", "NewPass1!")
+    assert ok is False
+    assert msg == "server error"
+
+def test_edit_expire_fail_status_text(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.patch.return_value
+    resp.ok = False
+    resp.status_code = 500
+    resp.text = "boom"
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.edit_expire(s, datetime(2030, 1, 1, 12, 0, 0))
+    assert ok is False
+    assert "500" in msg
+
+def test_edit_username_success(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    backend.session.patch.return_value.ok = True
+
+    ok, msg = backend.edit_username(Username("NewUser99"))
+
+    assert ok is True
+    assert msg == "Username changed successfully"
+    backend.session.patch.assert_called_once_with(
+        f"{BASE_URL}/auth/user/",
+        json={"username": Username("NewUser99")},
+        headers={"X-CSRFToken": "csrf123"},
+    )
+
+
+def test_edit_expire_exception(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    backend.session.patch.side_effect = Exception("timeout")
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.edit_expire(s, datetime(2030, 1, 1, 12, 0, 0))
+    assert ok is False
+    assert "timeout" in msg
+
+
+def test_edit_visibility_fail(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    backend.session.patch.return_value.ok = False
+    backend.session.patch.return_value.text = "nope"
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, msg = backend.edit_visibility(s, False)
+
+    assert ok is False
+    assert msg == "nope"
+
+
+def test_edit_username_fail_returns_json(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.patch.return_value
+    resp.ok = False
+    resp.json.return_value = {"username": ["error"]}
+
+    ok, msg = backend.edit_username(Username("NewUser99"))
+    assert ok is False
+    assert msg == {"username": ["error"]}
+
+
+def test_edit_username_fail_returns_text_when_json_raises(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.patch.return_value
+    resp.ok = False
+    resp.json.side_effect = Exception("no json")
+    resp.text = "bad"
+
+    ok, msg = backend.edit_username(Username("NewUser99"))
+    assert ok is False
+    assert msg == "bad"
+
+def test_create_url_success(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.post.return_value
+    resp.ok = True
+    resp.json.return_value = {"code": "zzz"}
+
+    s = short(target="http://a.it", label="lab", expired_at=None, private=False)
+    ok, out = backend.createUrl(s)
+
+    assert ok is True
+    assert out == "http://localhost:8000/zzz"
+
+
+def test_create_url_fail(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.post.return_value
+    resp.ok = False
+    resp.status_code = 400
+    resp.text = "bad request"
+
+    s = short(target="http://a.it", label="lab", expired_at=None, private=False)
+    ok, out = backend.createUrl(s)
+
+    assert ok is False
+    assert "400" in out
+
+
+def test_create_url_exception(backend):
+    backend.session.post.side_effect = Exception("network down")
+
+    s = short(target="http://a.it", label="lab", expired_at=None, private=False)
+    ok, out = backend.createUrl(s)
+
+    assert ok is False
+    assert "network down" in out
+
+def test_delete_url_fail(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.delete.return_value
+    resp.ok = False
+    resp.status_code = 404
+    resp.text = "not found"
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, out = backend.deleteUrl(s)
+
+    assert ok is False
+    assert "404" in out
+
+
+def test_delete_url_exception(backend):
+    backend.session.delete.side_effect = Exception("boom")
+
+    s = ShortUrl(code="abc123", label="x", target="http://a.it", user="u")
+    ok, out = backend.deleteUrl(s)
+
+    assert ok is False
+    assert "boom" in out
+
+def test_get_short_url_fail(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    resp = backend.session.get.return_value
+    resp.ok = False
+    resp.status_code = 403
+    resp.text = "forbidden"
+
+    ok, out = backend.getShortUrl()
+    assert ok is False
+    assert "403" in out
+
+
+def test_get_short_url_exception(backend):
+    backend.session.get.side_effect = Exception("timeout")
+
+    ok, out = backend.getShortUrl()
+    assert ok is False
+    assert "timeout" in out
+
+def test_get_short_url_success_with_patched_shorturl(backend, monkeypatch):
+    import tui.client as client_mod
+
+    class DummyShortUrl:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+    monkeypatch.setattr(client_mod, "ShortUrl", DummyShortUrl)
+
+    backend.session.cookies.get.return_value = "csrf123"
+    backend.session.get.return_value.ok = True
+    backend.session.get.return_value.json.return_value = [
+        {"code": "c1", "target": "http://a.it", "label": "A", "private": False, "expired_at": None},
+    ]
+
+    ok, urls = backend.getShortUrl()
+    assert ok is True
+    assert urls[0].code == "c1"
+
+def test_edit_label_success(backend):
+    backend.session.cookies.get.return_value = "csrf123"
+    backend.session.patch.return_value.ok = True
+
+    class Dummy:
+        code = "abc123"
+
+    ok, msg = backend.edit_label("NEWLABEL", Dummy())
+
+    assert ok is True
+    assert msg == "Label changed successfully"
+
+

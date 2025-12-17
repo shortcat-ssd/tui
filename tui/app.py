@@ -71,7 +71,7 @@ def do_register():
 
 def logout():
     client.logout()
-    print("\Logged out.\n")
+    print("Logged out.\n")
 
 
 
@@ -159,10 +159,6 @@ def url_history():
     dict = urls_to_dict(lista)
     show_urls_dict(dict)
 
-    scelta = input("Quale url desideri eliminare? ").strip()
-    scelta = int(scelta)
-    item = dict[scelta]
-    client.deleteUrl(item)
 
 
 
@@ -300,7 +296,8 @@ def editmenu():
         .with_entry(Entry.create("2", "LABEL", modify_label))
         .with_entry(Entry.create("3", "PRIVATE", modify_visibility))
         .with_entry(Entry.create("4", "EXPIRE AT", modify_expire))
-        .with_entry(Entry.create("0", "LOG OUT", logout, is_exit=True))
+        .with_entry(Entry.create("0", "BACK", lambda: True, is_exit=True))
+        #.with_entry(Entry.create("0", "LOG OUT", logout, is_exit=True))
         .build()
     )
     menu.run()
@@ -314,11 +311,10 @@ def submenu():
         .with_entry(Entry.create("2", "EDIT SHORT", edit_url))
         .with_entry(Entry.create("3", "DELETE URL", delete_url))
         .with_entry(Entry.create("4", "CHRONOLOGY URL", url_history))
-        #.with_entry(Entry.create("5", "INFO URL", url_info))
         .with_entry(Entry.create("6", "EDIT USERNAME", edit_username))
         .with_entry(Entry.create("7", "EDIT PASSWORD", edit_password))
-        #.with_entry(Entry.create("0", "BACK", back_to_submenu))
-        .with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
+        .with_entry(Entry.create("0", "BACK", lambda: True, is_exit=True))
+        #.with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
         .build()
     )
     menu.run()

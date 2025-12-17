@@ -30,7 +30,6 @@ class Backend:
 
         if response.ok:
             self.session.cookies.clear()
-            #print("Logged out")
         else:
             print("Logout failed")
 

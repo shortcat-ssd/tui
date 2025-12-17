@@ -161,11 +161,26 @@ def url_history():
 
 
 
-
-
 def modify_expire():
-    pass
+    short_url = same_method()
+    if not short_url:
+        return
 
+    expiry_input = input("Inserisci la nuova data di scadenza (YYYY-MM-DD HH:MM) o 0 per annullare: ").strip()
+    if expiry_input == "0":
+        return
+
+    try:
+        expiry_datetime = datetime.strptime(expiry_input, "%Y-%m-%d %H:%M")
+    except ValueError:
+        print("Formato data non valido. Usa YYYY-MM-DD HH:MM")
+        return
+
+    ok, msg = client.edit_expire(short_url, expiry_datetime)
+    if ok:
+        print("Data di scadenza aggiornata!")
+    else:
+        print(f"Errore: {msg}")
 
 
 def modify_target():
@@ -282,7 +297,7 @@ def edit_password():
 
     ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
     if ok:
-        print("\n password updated. Click send to go back to the menu.")
+        print("\n Password updated. Click send to go back to the menu.")
     else:
         print(f"\nError: {text}. Click send to go back to the menu")
     input("")
@@ -297,7 +312,6 @@ def editmenu():
         .with_entry(Entry.create("3", "PRIVATE", modify_visibility))
         .with_entry(Entry.create("4", "EXPIRE AT", modify_expire))
         .with_entry(Entry.create("0", "BACK", lambda: True, is_exit=True))
-        #.with_entry(Entry.create("0", "LOG OUT", logout, is_exit=True))
         .build()
     )
     menu.run()
@@ -314,7 +328,6 @@ def submenu():
         .with_entry(Entry.create("6", "EDIT USERNAME", edit_username))
         .with_entry(Entry.create("7", "EDIT PASSWORD", edit_password))
         .with_entry(Entry.create("0", "BACK", lambda: True, is_exit=True))
-        #.with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
         .build()
     )
     menu.run()

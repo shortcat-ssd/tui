@@ -1,6 +1,7 @@
 import requests
 
 from tui.domain import Username, Password, Email, ShortUrl, short
+from datetime import datetime
 
 BASE_URL = "http://localhost:8000/api/v1"
 
@@ -87,6 +88,27 @@ class Backend:
             headers={"X-CSRFToken": csrf_token}
         )
         return response.ok
+
+
+    def edit_expire(self, s: ShortUrl, new_expire: datetime):
+        """
+        Aggiorna solo il campo expired_at di uno short URL.
+        """
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.patch(
+                f"{BASE_URL}/shorts/{s.code}/",
+                json={"expired_at": new_expire.isoformat()},
+                headers={"X-CSRFToken": csrf_token}
+            )
+
+            if response.ok:
+                return True, "Scadenza aggiornata correttamente"
+            else:
+                return False, f"{response.status_code}: {response.text}"
+
+        except Exception as e:
+            return False, str(e)
 
 
     def edit_label(self, new_label: str, s: short):

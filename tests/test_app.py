@@ -314,3 +314,21 @@ def test_url_history_success(mock_client, mock_urls_to_dict, mock_show):
     mock_urls_to_dict.assert_called_once_with([mock_url_item])
 
     mock_show.assert_called_once_with({1: mock_url_item})
+
+
+@patch('builtins.input', side_effect=['1', 'y'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+def test_delete_url_failure(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    mock_client.deleteUrl.return_value = (False, "Some error")
+
+    delete_url()
+
+    mock_print.assert_any_call("Error:", "Some error")

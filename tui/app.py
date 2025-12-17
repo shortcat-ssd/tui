@@ -108,8 +108,6 @@ def convert_url():
     ok, short_url_or_error = client.createUrl(s)
 
 
-   # ok, short_url_or_error = client.createUrl(raw_url)
-
     if ok:
         print(f"Short Url Created in app.py: {short_url_or_error}\n")
     else:
@@ -120,16 +118,33 @@ def edit_url():
    editmenu()
 
 
+#=================== DA IMPLEMENTARE ====================
+
 def delete_url():
     print("Funzione delete_url ancora da implementare.")
 
+def url_info():
+    print("Funzione url_info ancora da implementare.")
+
+
+def modify_target():
+    pass
+
+
+
+def modify_expire():
+    pass
+
+
+
+
+
+
+
 
 def url_history():
-    #lista: list[ShortUrl]  = client.getShortUrl()
-    #show_urls(lista)
-
-    lista: list[ShortUrl] = client.getShortUrl()
-    dict = urls_to_dict(lista[1])
+    ok, lista = client.getShortUrl()
+    dict = urls_to_dict(lista)
     show_urls_dict(dict)
 
 
@@ -154,40 +169,22 @@ def show_urls(lista):
         print("CODE", code,"VISIBILITY", visibility, "EXPIRE", expire,"TARGET", target, "LABEL", label, end="\n")
 
 
-def url_info():
-    print("Funzione url_info ancora da implementare.")
 
 
-def edit_username():
-    new_username = input("New Username: ").strip()
-    ok, text = client.edit_username(new_username)
-    if ok:
-        print(f"\nUsername Updated: {new_username}! Click send to go back to the menu.")
-    else:
-        print(f"\nError: {text}. Click send to go back to the menu.")
-    input("")
 
-
-def edit_password():
-    old_pw = getpass("Old password: ").strip()
-    new_pw1 = getpass("New password: ").strip()
-    new_pw2 = getpass("Confirm new password: ").strip()
-
-    ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
-    if ok:
-        print("\n password updated. Click send to go back to the menu.")
-    else:
-        print(f"\nError: {text}. Click send to go back to the menu")
-    input("")
-def modify_target():
-    pass
 
 def modify_label():
-    pass
+    short_url = same_method()
+    scelta = input("Inserisci la nuova label: ").strip()
+    #TODO: VALIDAZIONIIIII
+    print("Stampa in modify label", short_url)
+    client.edit_label(scelta, short_url)
+
+
 
 def modify_visibility():
     short_url = same_method()
-    scelta = input("inserisci la nuova visibilità: ").strip()
+    scelta = input("Inserisci la nuova visibilità: ").strip()
     if scelta in ["yes", "y", "true", "1"]:
         scelta = True
     else:
@@ -197,14 +194,21 @@ def modify_visibility():
 
 
 def same_method():
-    lista: list[ShortUrl] = client.getShortUrl()
-    dict = urls_to_dict(lista[1])
+    ok, lista = client.getShortUrl()
+    if not ok:
+        print("Errore nel recupero degli short URL:", lista)
+        return None
+
+    dict = urls_to_dict(lista)
     show_urls_dict(dict)
+
     scelta = input("Indicare il numero dell'url da modificare: ").strip()
     scelta = int(scelta)
-    item = dict.get(scelta)
-    print("ITEM SELEZIONATO", item)
+
+    item = dict[scelta]
+    print("SHORT SELEZIONATO: ", item)
     return item
+
 
 
 
@@ -220,6 +224,19 @@ def urls_to_dict(lista):
 
 
 def show_urls_dict(urls_dict):
+    if not urls_dict:
+        print("Nessun URL trovato.\n")
+        return
+
+    for key, s in urls_dict.items():
+        print(
+            f"{key}) CODE: {s.code}, TARGET: {s.target}, LABEL: {s.label}, "
+            f"PRIVATE: {s.private}, EXPIRE: {s.expired_at}"
+        )
+
+
+
+def show_urls_(urls_dict):
     """
     Stampa in modo leggibile un dizionario di URL.
     """
@@ -245,8 +262,27 @@ def show_urls_dict(urls_dict):
 
 
 
-def modify_expire():
-    pass
+def edit_username():
+    new_username = input("New Username: ").strip()
+    ok, text = client.edit_username(new_username)
+    if ok:
+        print(f"\nUsername Updated: {new_username}! Click send to go back to the menu.")
+    else:
+        print(f"\nError: {text}. Click send to go back to the menu.")
+    input("")
+
+
+def edit_password():
+    old_pw = getpass("Old password: ").strip()
+    new_pw1 = getpass("New password: ").strip()
+    new_pw2 = getpass("Confirm new password: ").strip()
+
+    ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
+    if ok:
+        print("\n password updated. Click send to go back to the menu.")
+    else:
+        print(f"\nError: {text}. Click send to go back to the menu")
+    input("")
 
 
 def editmenu():

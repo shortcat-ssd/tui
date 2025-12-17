@@ -76,47 +76,59 @@ class Backend:
             except:
                 return False, response.text
 
-    def edit_target(self, new_target: str):
+
+
+
+    def edit_target(self, s: ShortUrl, new_target: str):
+        csrf_token = self.session.cookies.get("csrftoken")
+        response = self.session.patch(
+            f"{BASE_URL}/shorts/{s.code}/",
+            json={"target": new_target},
+            headers={"X-CSRFToken": csrf_token}
+        )
+        return response.ok
+
+    def edit_label(self, new_label: str, s: short):
         try:
             csrf_token = self.session.cookies.get("csrftoken")
-            response = self.session.post(
-                f"{BASE_URL}/shorts/{new_target}/",
-                data={"target": new_target},
-                headers={"X-CSRFToken": csrf_token}
-            )
-            if response.ok:
-                data = response.json()
-                short_code = data.get("code")
-                short_url = f"http://localhost:8000/{short_code}"
-                return True, short_url
-            else:
-                return False, f"{response.status_code}: {response.text}"
-
-
-
-        except Exception as e:
-            return False, str(e)
-
-    def edit_visibility(self, s: ShortUrl, scelta:bool):
-        try:
-            csrf_token = self.session.cookies.get("csrftoken")
-            response = self.session.post(
+            response = self.session.patch(
                 f"{BASE_URL}/shorts/{s.code}/",
-                data={"target": s.target,
-                      "private": scelta,
-                      "label": s.label,
-                      "expired_at": s.expired_at,
-                },
+
+                json={
+                      "label": new_label,
+                      },
                 headers={"X-CSRFToken": csrf_token}
             )
+            print(response.text)
             if response.ok:
-                return True
+                return True, "Label changed successfully"
             else:
                 return False, f"{response.status_code}: {response.text}"
+
+
 
         except Exception as e:
             return False, str(e)
 
+
+
+
+
+    def edit_visibility(self, s: ShortUrl, scelta: bool):
+        csrf_token = self.session.cookies.get("csrftoken")
+
+        response = self.session.patch(
+            f"{BASE_URL}/shorts/{s.code}/",
+            json={
+                "private": scelta
+            },
+            headers={"X-CSRFToken": csrf_token}
+        )
+
+        if response.ok:
+            return True
+        else:
+            return False, response.text
 
     def edit_username(self, new_username: Username):
         csrf_token = self.session.cookies.get("csrftoken")
@@ -157,6 +169,7 @@ class Backend:
 
 
 
+
     def getShortUrl(self):
         try:
             csrf_token = self.session.cookies.get("csrftoken")
@@ -166,19 +179,20 @@ class Backend:
             )
 
             if response.ok:
-                data = response.json()  # lista di dizionari dal backend
+                data = response.json()
 
-                # Convertiamo in lista di dict con i campi che ci interessano
                 short_urls = [
-                    {
-                        "code": item.get("code"),
-                        "target": item.get("target"),
-                        "label": item.get("label", ""),
-                        "visibility": "Private" if item.get("private") else "Public",
-                        "expire": item.get("expired_at", "∞")
-                    }
+                    ShortUrl(
+                        code=item["code"],
+                        target=item["target"],
+                        label=item.get("label", ""),
+                        private=item.get("private", False),
+                        expired_at=item.get("expired_at"),
+                        user= None
+                    )
                     for item in data
                 ]
+
                 return True, short_urls
             else:
                 return False, f"{response.status_code}: {response.text}"
@@ -188,27 +202,3 @@ class Backend:
 
 
 
-"""
-    def createUrl(self, url: ShortUrl):
-        try:
-            csrf_token = self.session.cookies.get("csrftoken")
-            response = self.session.post(
-                f"{BASE_URL}/shorts/",
-                data={"target": url},
-                headers={"X-CSRFToken": csrf_token}
-            )
-            if response.ok:
-                data = response.json()
-                short_code = data.get("code")
-                short_url = f"http://localhost:8000/{short_code}"
-                return True, short_url
-            else:
-                return False, f"{response.status_code}: {response.text}"
-
-
-
-        except Exception as e:
-            return False, str(e)
-
-
-"""

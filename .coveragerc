@@ -1,0 +1,15 @@
+[run]
+branch = True
+
+omit =
+    tui/__init__.py
+
+[report]
+include =
+    tui/app.py
+    tui/client.py
+    tui/domain.py
+    tui/menu.py
+    tui/validators.py
+
+show_missing = True

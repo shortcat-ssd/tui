@@ -1,8 +1,9 @@
 from getpass import getpass
 
-from pyexpat.errors import messages
+
 from valid8 import ValidationError
 
+from tui.validators import validate_label, validate_expired_at, validate_private, validate_url
 from .client import Backend
 from .domain import Username, Password, Email, ShortUrl, short
 from .menu import Menu, Entry, Description, Key
@@ -19,7 +20,7 @@ def do_login():
         try:
             raw_user = input("Username: ").strip()
             user = Username(raw_user)
-            print(f"DEBUG: username ok: {user}")
+
 
             raw_pass = getpass("Password: ").strip()
             pw = Password(raw_pass)
@@ -32,7 +33,6 @@ def do_login():
                 print("\nWrong username or password.")
 
         except ValidationError as e:
-            raise ValidationError(e)
             print(f"Error: {e}. Try again.\n")
 
 
@@ -76,40 +76,46 @@ def logout():
 
 
 
+
+
+
+
 def convert_url():
     print("\n--- URL CONVERSATION ---")
 
     raw_url = input("URL: ").strip()
     raw_label = input("Label: ").strip()
     expiry_str = input("Expiry Date and Time (YYYY-MM-DD HH:MM, optional): ").strip()
-
     private_input = input("Private (yes/no): ").strip().lower()
 
-    if private_input in ["yes", "y", "true", "1"]:
-        private = True
-    else:
-        private = False
+    # Conversione input booleano
+    private = private_input in ["yes", "y", "true", "1"]
 
-    print(private)
+    try:
+        # Validazioni
+        raw_url = validate_url(raw_url)
+        raw_label = validate_label(raw_label)
+        private = validate_private(private)
 
-    if not raw_url:
-        print("Invalid Url, Try again.\n")
+        expiry_datetime = None
+        if expiry_str:
+            try:
+                expiry_datetime = datetime.strptime(expiry_str, "%Y-%m-%d %H:%M")
+            except ValueError:
+                print("Invalid date format. Use YYYY-MM-DD HH:MM\n")
+                return
+            expiry_datetime = validate_expired_at(expiry_datetime)
+
+    except ValidationError as e:
+        print(f"Error in input: {e}")
         return
 
-    expiry_datetime = None
-    if expiry_str:
-        try:
-            expiry_datetime = datetime.strptime(expiry_str, "%Y-%m-%d %H:%M")
-        except ValueError:
-            print("Invalid date format. Use YYYY-MM-DD HH:MM\n")
-            return
-
+    # Creazione short URL
     s = short(raw_url, raw_label, expiry_datetime, private)
     ok, short_url_or_error = client.createUrl(s)
 
-
     if ok:
-        print(f"Short Url Created in app.py: {short_url_or_error}\n")
+        print(f"Short URL created: {short_url_or_error}\n")
     else:
         print(f"Conversion Error: {short_url_or_error}\n")
 
@@ -172,6 +178,7 @@ def modify_expire():
 
     try:
         expiry_datetime = datetime.strptime(expiry_input, "%Y-%m-%d %H:%M")
+        expiry_datetime = validate_expired_at(expiry_datetime)
     except ValueError:
         print("Invalid date format. Use YYYY-MM-DD HH:MM")
         return
@@ -186,18 +193,19 @@ def modify_expire():
 def modify_target():
     short_url = same_method()
 
-    #TODO: validazioni sull'input
+
     if not short_url:
         return
 
-    nuova_target = input("Enter the new target: ").strip()
-    if not nuova_target:
+    nuovo_target = input("Enter the new target: ").strip()
+    nuovo_target = validate_url(nuovo_target)
+    if not nuovo_target:
         print("Invalid target. Operation canceled.")
         return
 
-    ok = client.edit_target(short_url, nuova_target)
+    ok = client.edit_target(short_url, nuovo_target)
     if ok:
-        print(f"Target successfully updated to: {nuova_target}")
+        print(f"Target successfully updated to: {nuovo_target}")
     else:
         print("Error updating target")
 
@@ -207,9 +215,10 @@ def modify_label():
     if not short_url:
         return None
 
-    scelta = input("Enter the new label: ").strip()
-    #TODO: VALIDAZIONIIIII
-    client.edit_label(scelta, short_url)
+    label = input("Enter the new label: ").strip()
+    label = validate_label(label)
+
+    client.edit_label(label, short_url)
 
 
 
@@ -221,6 +230,7 @@ def modify_visibility():
     else:
         scelta= False
 
+    scelta = validate_private(scelta)
     client.edit_visibility(short_url, scelta)
 
 
@@ -234,7 +244,15 @@ def same_method():
     show_urls_dict(dict)
 
     scelta = input("Enter the URL number to edit: ").strip()
+    if not scelta.isdigit():
+        print("Invalid input. Please enter a number.")
+        return None
+
     scelta = int(scelta)
+
+    if scelta not in dict:
+        print("Invalid choice. Number out of range.")
+        return None
 
     item = dict[scelta]
     return item
@@ -287,6 +305,7 @@ def show_urls_dict(urls_dict):
 
 def edit_username():
     new_username = input("New Username: ").strip()
+    new_username = Username(new_username)
     ok, text = client.edit_username(new_username)
     if ok:
         print(f"\nUsername Updated: {new_username}! Click send to go back to the menu.")
@@ -299,6 +318,10 @@ def edit_password():
     old_pw = getpass("Old password: ").strip()
     new_pw1 = getpass("New password: ").strip()
     new_pw2 = getpass("Confirm new password: ").strip()
+
+    old_pw = Password(old_pw)
+    new_pw1 = Password(new_pw1)
+    new_pw2 = Password(new_pw2)
 
     ok, text = client.edit_password(old_pw, new_pw1, new_pw2)
     if ok:

@@ -1,14 +1,10 @@
 from unittest.mock import patch, MagicMock
 
-from tui.app import  modify_visibility, same_method
+from tui.app import  same_method
 
-from tui.app import  modify_label
-from tui.app import do_login, do_register, logout, convert_url, edit_url, delete_url, url_history, editmenu
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility, \
-    urls_to_dict
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
-from tui.app import do_login, do_register, logout, edit_password, edit_url
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
+
+from tui.app import  editmenu
+from tui.app import modify_visibility,urls_to_dict, modify_label, submenu
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
@@ -647,3 +643,23 @@ def test_edit_password_failure(mock_input, mock_getpass, mock_pw_cls, mock_edit,
 
     captured = capsys.readouterr()
     assert "Error: Passwords do not match" in captured.out
+
+
+@patch('tui.app.Menu.Builder')
+def test_submenu_runs_menu(mock_builder_class):
+    mock_builder_instance = MagicMock()
+    mock_builder_class.return_value = mock_builder_instance
+
+
+    mock_builder_instance.with_entry.return_value = mock_builder_instance
+    menu_mock = MagicMock(name="menu_instance")
+    mock_builder_instance.build.return_value = menu_mock
+
+    # Patch di print
+    with patch('builtins.print') as mock_print:
+        submenu()
+
+    mock_print.assert_called_with("\n============= USER MENU  ==============")
+
+
+    menu_mock.run.assert_called_once()

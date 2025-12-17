@@ -5,6 +5,7 @@ from tui.client import Backend
 from tui.domain import Username, Password, Email, is_email
 from datetime import datetime, timedelta
 from tui.domain import ShortUrl
+from tui.domain import short
 
 def test_is_expired_when_none():
     s = ShortUrl(
@@ -43,7 +44,31 @@ def test_is_expired_true_when_in_past():
 def backend():
     return Backend()
 
+def test_shorturl_is_expired_none():
+    s = ShortUrl(code="c1", label="lab", target="http://a.it", user="u", expired_at=None)
+    assert s.is_expired is False  # copre: if ... return False
 
+
+def test_shorturl_is_expired_future():
+    s = ShortUrl(
+        code="c1",
+        label="lab",
+        target="http://a.it",
+        user="u",
+        expired_at=datetime.now() + timedelta(days=1),
+    )
+    assert s.is_expired is False  # copre: return self.expired_at <= now (False)
+
+
+def test_shorturl_is_expired_past():
+    s = ShortUrl(
+        code="c1",
+        label="lab",
+        target="http://a.it",
+        user="u",
+        expired_at=datetime.now() - timedelta(days=1),
+    )
+    assert s.is_expired is True
 
 
 def test_login_success(backend):
@@ -88,4 +113,24 @@ def test_email_validation():
 def test_username_str():
     u = Username("Persona789")
     assert str(u) == "Persona789"
+
+def test_shorturl_str():
+    s = ShortUrl(
+        code="c1",
+        label="lab",
+        target="http://a.it",
+        user="u",
+        expired_at=None,
+    )
+    assert str(s) == "c1 -> http://a.it"
+
+
+def test_short_str():
+    s = short(
+        target="http://a.it",
+        label="lab",
+        expired_at=None,
+        private=False,
+    )
+    assert str(s) == "http://a.it"
 

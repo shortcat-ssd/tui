@@ -737,3 +737,58 @@ def test_submenu_runs_menu(mock_builder_class):
 
 
     menu_mock.run.assert_called_once()
+
+from django.core.exceptions import ValidationError
+
+
+@patch('builtins.input')
+def test_convert_url_invalid_date_format(mock_input, capsys):
+    mock_input.side_effect = [
+        "http://google.com",
+        "MyLabel",
+        "non-è-una-data",
+        "no"
+    ]
+
+
+    convert_url()
+
+    # VERIFICA
+    captured = capsys.readouterr()
+    assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
+
+
+@patch('tui.app.validate_url')
+@patch('builtins.input')
+def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
+    mock_input.side_effect = ["bad-url", "Label", "", "no"]
+
+    mock_val_url.side_effect = ValidationError("URL non valido!")
+
+
+    convert_url()
+
+    captured = capsys.readouterr()
+    assert "Error in input" in captured.out
+
+
+@patch('tui.app.validate_expired_at')
+@patch('tui.app.validate_url')
+@patch('tui.app.validate_label')
+@patch('tui.app.validate_private')
+@patch('builtins.input')
+def test_convert_url_expired_date_logic_error(mock_input, mock_val_priv, mock_val_lbl, mock_val_url, mock_val_date,
+                                              capsys):
+    mock_input.side_effect = ["http://ok.com", "Label", "2020-01-01 12:00", "no"]
+
+    mock_val_url.side_effect = lambda x: x
+    mock_val_lbl.side_effect = lambda x: x
+    mock_val_priv.side_effect = lambda x: x
+
+    mock_val_date.side_effect = ValidationError("Date cannot be in the past")
+
+    convert_url()
+
+    captured = capsys.readouterr()
+    assert "Error in input" in captured.out
+    assert "Date cannot be in the past" in captured.out

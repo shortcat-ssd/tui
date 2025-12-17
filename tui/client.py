@@ -88,6 +88,7 @@ class Backend:
         )
         return response.ok
 
+
     def edit_label(self, new_label: str, s: short):
         try:
             csrf_token = self.session.cookies.get("csrftoken")
@@ -130,6 +131,9 @@ class Backend:
         else:
             return False, response.text
 
+
+
+
     def edit_username(self, new_username: Username):
         csrf_token = self.session.cookies.get("csrftoken")
         response = self.session.patch(
@@ -144,6 +148,8 @@ class Backend:
                 return False, response.json()
             except:
                 return False, response.text
+
+
 
     def createUrl(self, url: short):
         try:

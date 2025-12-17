@@ -127,13 +127,7 @@ def url_info():
     print("Funzione url_info ancora da implementare.")
 
 
-def modify_target():
-    pass
 
-
-
-def modify_expire():
-    pass
 
 
 
@@ -169,15 +163,37 @@ def show_urls(lista):
         print("CODE", code,"VISIBILITY", visibility, "EXPIRE", expire,"TARGET", target, "LABEL", label, end="\n")
 
 
+def modify_expire():
+    pass
 
 
+
+def modify_target():
+    short_url = same_method()
+
+    #TODO: validazioni sull'input
+    if not short_url:
+        return
+
+    nuova_target = input("Inserisci il nuovo target: ").strip()
+    if not nuova_target:
+        print("Target non valido. Operazione annullata.")
+        return
+
+    ok = client.edit_target(short_url, nuova_target)
+    if ok:
+        print(f"Target aggiornato con successo a: {nuova_target}")
+    else:
+        print("Errore durante l'aggiornamento del target.")
 
 
 def modify_label():
     short_url = same_method()
+    if not short_url:
+        return None
+
     scelta = input("Inserisci la nuova label: ").strip()
     #TODO: VALIDAZIONIIIII
-    print("Stampa in modify label", short_url)
     client.edit_label(scelta, short_url)
 
 
@@ -228,36 +244,24 @@ def show_urls_dict(urls_dict):
         print("Nessun URL trovato.\n")
         return
 
+
+    header = f"{'N°':<4} | {'CODE':<10} | {'TARGET':<50} | {'LABEL':<20} | {'PRIVATE':<7} | {'EXPIRE':<20}"
+    print("*" * len(header))
+    print(header)
+    print("*" * len(header))
+
+
     for key, s in urls_dict.items():
-        print(
-            f"{key}) CODE: {s.code}, TARGET: {s.target}, LABEL: {s.label}, "
-            f"PRIVATE: {s.private}, EXPIRE: {s.expired_at}"
-        )
+        target = (s.target[:47] + '...') if len(s.target) > 50 else s.target  # tronca se troppo lungo
+        label = (s.label[:17] + '...') if len(s.label) > 20 else s.label
+        expire = s.expired_at if s.expired_at else "N/A"
+        print(f"{key:<4} | {s.code:<10} | {target:<50} | {label:<20} | {str(s.private):<7} | {expire:<20}")
+
+    print("*" * len(header))
+    print()
 
 
 
-def show_urls_(urls_dict):
-    """
-    Stampa in modo leggibile un dizionario di URL.
-    """
-    if not urls_dict:
-        print("Nessun URL trovato.\n")
-        return
-
-    for key, url_data in urls_dict.items():
-        # Se url_data è un dizionario con più proprietà
-        if isinstance(url_data, dict):
-            print(
-                f"{key},"
-                f"CODE: {url_data.get('code')}, "
-                f"TARGET: {url_data.get('target')}, "
-                f"LABEL: {url_data.get('label')}, "
-                f"VISIBILITY: {url_data.get('visibility')}, "
-                f"EXPIRE: {url_data.get('expire')}"
-            )
-        else:
-            # Se url_data è semplicemente il target
-            print(f"KEY: {key}, VALUE: {url_data}")
 
 
 

@@ -118,19 +118,37 @@ def edit_url():
    editmenu()
 
 
-#=================== DA IMPLEMENTARE ====================
-
 def delete_url():
-    print("Funzione delete_url ancora da implementare.")
+    ok, lista = client.getShortUrl()
+    if not ok:
+        print("Errore nel recupero degli URL:", lista)
+        return
 
-def url_info():
-    print("Funzione url_info ancora da implementare.")
+    dict_urls = urls_to_dict(lista)
+    show_urls_dict(dict_urls)
 
+    scelta = input("Quale URL desideri eliminare? (numero) ").strip()
+    if not scelta.isdigit():
+        print("Inserisci un numero valido.")
+        return
+    scelta = int(scelta)
 
+    if scelta not in dict_urls:
+        print("Numero non valido.")
+        return
 
+    item = dict_urls[scelta]
 
+    conferma = input(f"Sei sicuro di voler eliminare l'URL '{item.label}'? (y/n): ").strip().lower()
+    if conferma not in ["y", "yes"]:
+        print("Eliminazione annullata.")
+        return
 
-
+    ok, text = client.deleteUrl(item)
+    if ok:
+        print(text)
+    else:
+        print("Errore:", text)
 
 
 
@@ -141,26 +159,12 @@ def url_history():
     dict = urls_to_dict(lista)
     show_urls_dict(dict)
 
+    scelta = input("Quale url desideri eliminare? ").strip()
+    scelta = int(scelta)
+    item = dict[scelta]
+    client.deleteUrl(item)
 
 
-
-def show_urls(lista):
-    if not lista:
-        print("Nessun URL trovato.\n")
-        return
-
-    only_lista = lista[1]
-    #print(only_lista)
-
-    for url in only_lista:
-        #print("Oggetto", url, end="\n")
-        code = url["code"]
-        visibility = url["visibility"]
-        expire = url["expire"]
-        target = url["target"]
-        label = url["label"]
-
-        print("CODE", code,"VISIBILITY", visibility, "EXPIRE", expire,"TARGET", target, "LABEL", label, end="\n")
 
 
 def modify_expire():
@@ -265,7 +269,6 @@ def show_urls_dict(urls_dict):
 
 
 
-
 def edit_username():
     new_username = input("New Username: ").strip()
     ok, text = client.edit_username(new_username)
@@ -311,9 +314,9 @@ def submenu():
         .with_entry(Entry.create("2", "EDIT SHORT", edit_url))
         .with_entry(Entry.create("3", "DELETE URL", delete_url))
         .with_entry(Entry.create("4", "CHRONOLOGY URL", url_history))
-        .with_entry(Entry.create("5", "INFO URL", url_info))
+        #.with_entry(Entry.create("5", "INFO URL", url_info))
         .with_entry(Entry.create("6", "EDIT USERNAME", edit_username))
-        .with_entry(Entry.create("7", "EDIT PAASWORD", edit_password))
+        .with_entry(Entry.create("7", "EDIT PASSWORD", edit_password))
         #.with_entry(Entry.create("0", "BACK", back_to_submenu))
         .with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
         .build()

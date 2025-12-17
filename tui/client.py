@@ -100,7 +100,6 @@ class Backend:
                       },
                 headers={"X-CSRFToken": csrf_token}
             )
-            print(response.text)
             if response.ok:
                 return True, "Label changed successfully"
             else:
@@ -174,6 +173,20 @@ class Backend:
             return False, str(e)
 
 
+
+    def deleteUrl(self, url: ShortUrl):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.delete(
+                f"{BASE_URL}/shorts/{url.code}/",
+                headers={"X-CSRFToken": csrf_token}
+            )
+            if response.ok:
+                return True, "URL eliminata correttamente."
+            else:
+                return False, f"{response.status_code}: {response.text}"
+        except Exception as e:
+            return False, str(e)
 
 
     def getShortUrl(self):

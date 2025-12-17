@@ -101,7 +101,7 @@ class Backend:
             )
 
             if response.ok:
-                return True, "Scadenza aggiornata correttamente"
+                return True, "Expiry updated successfully"
             else:
                 return False, f"{response.status_code}: {response.text}"
 
@@ -146,7 +146,7 @@ class Backend:
         )
 
         if response.ok:
-            return True
+            return True, "Visibility changed successfully"
         else:
             return False, response.text
 
@@ -202,7 +202,7 @@ class Backend:
                 headers={"X-CSRFToken": csrf_token}
             )
             if response.ok:
-                return True, "URL eliminata correttamente."
+                return True, "URL deleted successfully."
             else:
                 return False, f"{response.status_code}: {response.text}"
         except Exception as e:

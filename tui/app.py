@@ -121,34 +121,34 @@ def edit_url():
 def delete_url():
     ok, lista = client.getShortUrl()
     if not ok:
-        print("Errore nel recupero degli URL:", lista)
+        print("Error fetching URLs:", lista)
         return
 
     dict_urls = urls_to_dict(lista)
     show_urls_dict(dict_urls)
 
-    scelta = input("Quale URL desideri eliminare? (numero) ").strip()
+    scelta = input("Which URL do you want to delete? (number) ").strip()
     if not scelta.isdigit():
-        print("Inserisci un numero valido.")
+        print("Enter valid number.")
         return
     scelta = int(scelta)
 
     if scelta not in dict_urls:
-        print("Numero non valido.")
+        print("Invalid number.")
         return
 
     item = dict_urls[scelta]
 
-    conferma = input(f"Sei sicuro di voler eliminare l'URL '{item.label}'? (y/n): ").strip().lower()
+    conferma = input(f"Are you sure you want to delete the URL? '{item.label}'? (y/n): ").strip().lower()
     if conferma not in ["y", "yes"]:
-        print("Eliminazione annullata.")
+        print("Deletion cancelled.")
         return
 
     ok, text = client.deleteUrl(item)
     if ok:
         print(text)
     else:
-        print("Errore:", text)
+        print("Error:", text)
 
 
 
@@ -166,21 +166,21 @@ def modify_expire():
     if not short_url:
         return
 
-    expiry_input = input("Inserisci la nuova data di scadenza (YYYY-MM-DD HH:MM) o 0 per annullare: ").strip()
+    expiry_input = input("Enter the new expiration date (YYYY-MM-DD HH:MM) or 0 to cancel: ").strip()
     if expiry_input == "0":
         return
 
     try:
         expiry_datetime = datetime.strptime(expiry_input, "%Y-%m-%d %H:%M")
     except ValueError:
-        print("Formato data non valido. Usa YYYY-MM-DD HH:MM")
+        print("Invalid date format. Use YYYY-MM-DD HH:MM")
         return
 
     ok, msg = client.edit_expire(short_url, expiry_datetime)
     if ok:
-        print("Data di scadenza aggiornata!")
+        print("Updated expiration date!")
     else:
-        print(f"Errore: {msg}")
+        print(f"Error: {msg}")
 
 
 def modify_target():
@@ -190,16 +190,16 @@ def modify_target():
     if not short_url:
         return
 
-    nuova_target = input("Inserisci il nuovo target: ").strip()
+    nuova_target = input("Enter the new target: ").strip()
     if not nuova_target:
-        print("Target non valido. Operazione annullata.")
+        print("Invalid target. Operation canceled.")
         return
 
     ok = client.edit_target(short_url, nuova_target)
     if ok:
-        print(f"Target aggiornato con successo a: {nuova_target}")
+        print(f"Target successfully updated to: {nuova_target}")
     else:
-        print("Errore durante l'aggiornamento del target.")
+        print("Error updating target")
 
 
 def modify_label():
@@ -207,7 +207,7 @@ def modify_label():
     if not short_url:
         return None
 
-    scelta = input("Inserisci la nuova label: ").strip()
+    scelta = input("Enter the new label: ").strip()
     #TODO: VALIDAZIONIIIII
     client.edit_label(scelta, short_url)
 
@@ -215,7 +215,7 @@ def modify_label():
 
 def modify_visibility():
     short_url = same_method()
-    scelta = input("Inserisci la nuova visibilità: ").strip()
+    scelta = input("Enter the new visibility: ").strip()
     if scelta in ["yes", "y", "true", "1"]:
         scelta = True
     else:
@@ -227,17 +227,16 @@ def modify_visibility():
 def same_method():
     ok, lista = client.getShortUrl()
     if not ok:
-        print("Errore nel recupero degli short URL:", lista)
+        print("Error fetching URLs:", lista)
         return None
 
     dict = urls_to_dict(lista)
     show_urls_dict(dict)
 
-    scelta = input("Indicare il numero dell'url da modificare: ").strip()
+    scelta = input("Enter the URL number to edit: ").strip()
     scelta = int(scelta)
 
     item = dict[scelta]
-    print("SHORT SELEZIONATO: ", item)
     return item
 
 
@@ -256,7 +255,7 @@ def urls_to_dict(lista):
 
 def show_urls_dict(urls_dict):
     if not urls_dict:
-        print("Nessun URL trovato.\n")
+        print("No URLs found.\n")
         return
 
 

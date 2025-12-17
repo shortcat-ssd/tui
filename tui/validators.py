@@ -4,8 +4,10 @@ from valid8 import ValidationError
 from typing import Optional
 from datetime import datetime
 
+
 def is_alphanumeric(value: str) -> bool:
-    return bool(re.fullmatch(r'[a-zA-Z0-9]*', value))
+    return bool(re.fullmatch(r"[a-zA-Z0-9]*", value))
+
 
 def is_strong_password(value: str) -> bool:
 
@@ -17,12 +19,14 @@ def is_strong_password(value: str) -> bool:
         raise ValidationError("Password cannot be longer than 128 characters")
     return True
 
+
 def is_email(value: str) -> bool:
 
-    pattern = r'^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$'
+    pattern = r"^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"
     if not re.fullmatch(pattern, value):
         raise ValidationError("Invalid email format")
     return True
+
 
 def validate_url(url: str) -> str:
     if not url:
@@ -34,6 +38,7 @@ def validate_url(url: str) -> str:
         raise ValidationError("URL must have a valid domain")
     return url
 
+
 def validate_label(label: str) -> str:
     if not label:
         raise ValidationError("Label cannot be empty")
@@ -41,10 +46,12 @@ def validate_label(label: str) -> str:
         raise ValidationError("Label cannot be longer than 100 characters")
     return label
 
+
 def validate_private(private) -> bool:
     if not isinstance(private, bool):
         raise ValidationError("Private must be a boolean value")
     return private
+
 
 def validate_expired_at(expired_at: Optional[datetime]) -> Optional[datetime]:
     if expired_at is not None:

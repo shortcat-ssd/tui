@@ -1,6 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
 
 from tui.domain import short
 
@@ -173,3 +173,31 @@ def test_edit_url_calls_editmenu(mock_editmenu):
     edit_url()
 
     mock_editmenu.assert_called_once()
+
+
+@patch('builtins.print')
+@patch('tui.app.client')
+def test_delete_url_get_shorturl_error(mock_client, mock_print):
+    mock_client.getShortUrl.return_value = (False, "Fetch error")
+    delete_url()
+    mock_print.assert_called_with("Error fetching URLs:", "Fetch error")
+
+@patch('builtins.input', side_effect=['abc'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict', return_value={1: MagicMock(label="label1")})
+def test_delete_url_non_numeric(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_client.getShortUrl.return_value = (True, [MagicMock(label="label1")])
+    delete_url()
+    mock_print.assert_called_with("Enter valid number.")
+
+@patch('builtins.input', side_effect=['2'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict', return_value={1: MagicMock(label="label1")})
+def test_delete_url_invalid_number(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_client.getShortUrl.return_value = (True, [MagicMock(label="label1")])
+    delete_url()
+    mock_print.assert_called_with("Invalid number.")

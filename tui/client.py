@@ -29,7 +29,7 @@ class Backend:
 
         if response.ok:
             self.session.cookies.clear()
-            print("Logged out")
+            #print("Logged out")
         else:
             print("Logout failed")
 
@@ -93,6 +93,26 @@ class Backend:
                 return False, f"{response.status_code}: {response.text}"
 
 
+
+        except Exception as e:
+            return False, str(e)
+
+    def edit_visibility(self, s: ShortUrl, scelta:bool):
+        try:
+            csrf_token = self.session.cookies.get("csrftoken")
+            response = self.session.post(
+                f"{BASE_URL}/shorts/{s.code}/",
+                data={"target": s.target,
+                      "private": scelta,
+                      "label": s.label,
+                      "expired_at": s.expired_at,
+                },
+                headers={"X-CSRFToken": csrf_token}
+            )
+            if response.ok:
+                return True
+            else:
+                return False, f"{response.status_code}: {response.text}"
 
         except Exception as e:
             return False, str(e)

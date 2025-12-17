@@ -71,7 +71,7 @@ def do_register():
 
 def logout():
     client.logout()
-    print("\nLogged out.\n")
+    print("\Logged out.\n")
 
 
 
@@ -117,7 +117,7 @@ def convert_url():
 
 
 def edit_url():
-    editmenu()
+   editmenu()
 
 
 def delete_url():
@@ -125,8 +125,12 @@ def delete_url():
 
 
 def url_history():
-    lista: list[ShortUrl]  = client.getShortUrl()
-    show_urls(lista)
+    #lista: list[ShortUrl]  = client.getShortUrl()
+    #show_urls(lista)
+
+    lista: list[ShortUrl] = client.getShortUrl()
+    dict = urls_to_dict(lista[1])
+    show_urls_dict(dict)
 
 
 
@@ -182,7 +186,64 @@ def modify_label():
     pass
 
 def modify_visibility():
-    pass
+    short_url = same_method()
+    scelta = input("inserisci la nuova visibilità: ").strip()
+    if scelta in ["yes", "y", "true", "1"]:
+        scelta = True
+    else:
+        scelta= False
+
+    client.edit_visibility(short_url, scelta)
+
+
+def same_method():
+    lista: list[ShortUrl] = client.getShortUrl()
+    dict = urls_to_dict(lista[1])
+    show_urls_dict(dict)
+    scelta = input("Indicare il numero dell'url da modificare: ").strip()
+    scelta = int(scelta)
+    item = dict.get(scelta)
+    print("ITEM SELEZIONATO", item)
+    return item
+
+
+
+def urls_to_dict(lista):
+    urls_dict = {}
+    i = 0
+
+    for item in lista:
+       i+=1
+       urls_dict[i] = item
+
+    return urls_dict
+
+
+def show_urls_dict(urls_dict):
+    """
+    Stampa in modo leggibile un dizionario di URL.
+    """
+    if not urls_dict:
+        print("Nessun URL trovato.\n")
+        return
+
+    for key, url_data in urls_dict.items():
+        # Se url_data è un dizionario con più proprietà
+        if isinstance(url_data, dict):
+            print(
+                f"{key},"
+                f"CODE: {url_data.get('code')}, "
+                f"TARGET: {url_data.get('target')}, "
+                f"LABEL: {url_data.get('label')}, "
+                f"VISIBILITY: {url_data.get('visibility')}, "
+                f"EXPIRE: {url_data.get('expire')}"
+            )
+        else:
+            # Se url_data è semplicemente il target
+            print(f"KEY: {key}, VALUE: {url_data}")
+
+
+
 
 def modify_expire():
     pass
@@ -196,7 +257,7 @@ def editmenu():
         .with_entry(Entry.create("2", "LABEL", modify_label))
         .with_entry(Entry.create("3", "PRIVATE", modify_visibility))
         .with_entry(Entry.create("4", "EXPIRE AT", modify_expire))
-        .with_entry(Entry.create("0", "Logout", logout, is_exit=True))
+        .with_entry(Entry.create("0", "LOG OUT", logout, is_exit=True))
         .build()
     )
     menu.run()
@@ -207,12 +268,13 @@ def submenu():
     menu = (
         Menu.Builder(Description("USER OPTIONS"))
         .with_entry(Entry.create("1", "CONVERT URL", convert_url))
-        .with_entry(Entry.create("2", "EDIT URL", edit_url))
+        .with_entry(Entry.create("2", "EDIT SHORT", edit_url))
         .with_entry(Entry.create("3", "DELETE URL", delete_url))
         .with_entry(Entry.create("4", "CHRONOLOGY URL", url_history))
         .with_entry(Entry.create("5", "INFO URL", url_info))
         .with_entry(Entry.create("6", "EDIT USERNAME", edit_username))
         .with_entry(Entry.create("7", "EDIT PAASWORD", edit_password))
+        #.with_entry(Entry.create("0", "BACK", back_to_submenu))
         .with_entry(Entry.create("0", "LOGOUT", logout, is_exit=True))
         .build()
     )

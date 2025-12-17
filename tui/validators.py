@@ -15,7 +15,7 @@ def is_strong_password(value: str) -> bool:
         raise ValidationError("Password cannot be empty")
     if len(value) < 8:
         raise ValidationError("Password must be at least 8 characters long")
-    if len(value) > 128:  # limite simile a Django
+    if len(value) > 128:
         raise ValidationError("Password cannot be longer than 128 characters")
     return True
 

@@ -352,17 +352,17 @@ def submenu():
     )
     menu.run()
 
+def build_main_menu():
+    menu = (
+        Menu.Builder(Description("MENU"))
+        .with_entry(Entry.create("1", "Login", do_login))
+        .with_entry(Entry.create("2", "Registration", do_register))
+        .with_entry(Entry.create("0", "Exit", logout, is_exit=True))
+        .build()
+    )
+    menu.run()
 
 def main(name: str):
     if __name__ == "__main__":
-        menu = (
-            Menu.Builder(Description("MENU"))
-            .with_entry(Entry.create("1", "Login", do_login))
-            .with_entry(Entry.create("2", "Registration", do_register))
-            .with_entry(Entry.create("0", "Exit", logout, is_exit=True))
-            .build()
-        )
-        menu.run()
+        build_main_menu()
 
-
-main(__name__)

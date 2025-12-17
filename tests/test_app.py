@@ -4,7 +4,7 @@ from tui.app import  same_method
 
 
 from tui.app import  editmenu
-from tui.app import modify_visibility,urls_to_dict, modify_label, submenu
+from tui.app import modify_visibility,urls_to_dict, modify_label, submenu, main, build_main_menu
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
@@ -662,4 +662,23 @@ def test_submenu_runs_menu(mock_builder_class):
     mock_print.assert_called_with("\n============= USER MENU  ==============")
 
 
+    menu_mock.run.assert_called_once()
+
+
+
+@patch('tui.app.Menu.Builder')
+@patch('tui.app.Description')
+def test_build_main_menu(mock_description, mock_builder_class):
+    mock_builder_instance = MagicMock()
+    mock_builder_class.return_value = mock_builder_instance
+    mock_builder_instance.with_entry.return_value = mock_builder_instance
+
+    menu_mock = MagicMock(name="menu_instance")
+    mock_builder_instance.build.return_value = menu_mock
+
+    # Chiama direttamente la funzione di costruzione
+    build_main_menu()
+
+    mock_builder_class.assert_called_once_with(mock_description.return_value)
+    mock_builder_instance.build.assert_called_once()
     menu_mock.run.assert_called_once()

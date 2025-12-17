@@ -201,3 +201,25 @@ def test_delete_url_invalid_number(mock_urls_to_dict, mock_show, mock_client, mo
     mock_client.getShortUrl.return_value = (True, [MagicMock(label="label1")])
     delete_url()
     mock_print.assert_called_with("Invalid number.")
+
+
+@patch('builtins.input', side_effect=['1', 'n'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict', return_value={1: MagicMock(label="label1")})
+def test_delete_url_cancelled(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_client.getShortUrl.return_value = (True, [MagicMock(label="label1")])
+    delete_url()
+    mock_print.assert_called_with("Deletion cancelled.")
+
+@patch('builtins.input', side_effect=['1', 'y'])
+@patch('builtins.print')
+@patch('tui.app.client')
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict', return_value={1: MagicMock(label="label1")})
+def test_delete_url_success(mock_urls_to_dict, mock_show, mock_client, mock_print, mock_input):
+    mock_client.getShortUrl.return_value = (True, [MagicMock(label="label1")])
+    mock_client.deleteUrl.return_value = (True, "Deleted")
+    delete_url()
+    mock_print.assert_called_with("Deleted")

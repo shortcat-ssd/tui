@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 
 from tui.app import do_login, do_register, logout, edit_password, edit_url
 from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
+from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
 
@@ -297,3 +297,20 @@ def test_delete_url_success(mock_urls_to_dict, mock_show, mock_client, mock_prin
     mock_client.deleteUrl.return_value = (True, "Deleted")
     delete_url()
     mock_print.assert_called_with("Deleted")
+
+
+@patch('tui.app.show_urls_dict')
+@patch('tui.app.urls_to_dict')
+@patch('tui.app.client')
+def test_url_history_success(mock_client, mock_urls_to_dict, mock_show):
+
+    mock_url_item = MagicMock(label="label1", target="http://example.com")
+    mock_client.getShortUrl.return_value = (True, [mock_url_item])
+
+    mock_urls_to_dict.return_value = {1: mock_url_item}
+
+    url_history()
+
+    mock_urls_to_dict.assert_called_once_with([mock_url_item])
+
+    mock_show.assert_called_once_with({1: mock_url_item})

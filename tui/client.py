@@ -91,9 +91,7 @@ class Backend:
 
 
     def edit_expire(self, s: ShortUrl, new_expire: datetime):
-        """
-        Aggiorna solo il campo expired_at di uno short URL.
-        """
+
         try:
             csrf_token = self.session.cookies.get("csrftoken")
             response = self.session.patch(

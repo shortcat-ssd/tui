@@ -269,7 +269,13 @@ def show_urls_dict(urls_dict):
     for key, s in urls_dict.items():
         target = (s.target[:47] + '...') if len(s.target) > 50 else s.target  # tronca se troppo lungo
         label = (s.label[:17] + '...') if len(s.label) > 20 else s.label
-        expire = s.expired_at if s.expired_at else "N/A"
+
+
+        if s.expired_at:
+            dt = datetime.fromisoformat(s.expired_at.replace("Z", ""))
+            expire = dt.strftime("%d/%m/%Y %H:%M")
+        else:
+            expire = "N/A"
         print(f"{key:<4} | {s.code:<10} | {target:<50} | {label:<20} | {str(s.private):<7} | {expire:<20}")
 
     print("*" * len(header))

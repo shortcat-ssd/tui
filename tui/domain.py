@@ -1,7 +1,7 @@
 import re
 from typing import Optional
 
-from tui.menu import is_alphanumeric
+from .menu import is_alphanumeric
 from valid8 import validate
 from typeguard import typechecked
 from dataclasses import dataclass

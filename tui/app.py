@@ -1,7 +1,5 @@
 from getpass import getpass
 
-from django.core.exceptions import ValidationError
-
 from tui.validators import (
     validate_label,
     validate_expired_at,

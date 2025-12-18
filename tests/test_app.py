@@ -12,6 +12,11 @@ from tui.app import do_login, do_register, logout, edit_password, convert_url, e
 from tui.domain import short
 
 
+@patch("tui.app.build_main_menu")
+def test_main_calls_build_main_menu_when_main(mock_build):
+    main("__main__")
+    mock_build.assert_called_once()
+
 
 @patch('tui.app.submenu')
 @patch('tui.app.client')
@@ -137,6 +142,7 @@ def test_modify_label_success():
                 with patch('tui.app.client.edit_label') as mock_edit:
                     modify_label()
                     mock_edit.assert_called_once_with(fake_label, fake_short_url)
+
 @patch('tui.app.submenu')
 @patch('tui.app.client')
 @patch('builtins.print')
@@ -855,3 +861,89 @@ def test_convert_url_api_failure(mock_input, mock_val_url, mock_val_lbl, mock_va
 
     captured = capsys.readouterr()
     assert "Conversion Error: Backend Timeout" in captured.out
+
+
+def test_modify_label_no_selection():
+    with patch('tui.app.same_method', return_value=None):
+        with patch('builtins.input') as mock_input:
+            with patch('tui.app.client.edit_label') as mock_edit:
+                result = modify_label()
+                assert result is None
+                mock_input.assert_not_called()
+                mock_edit.assert_not_called()
+
+
+@patch('tui.app.submenu')
+@patch('tui.app.client')
+@patch('tui.app.Password')
+@patch('tui.app.Email')
+@patch('tui.app.Username')
+@patch('tui.app.getpass')
+@patch('builtins.input')
+def test_do_register_validation_error(mock_input, mock_getpass, mock_user_cls, mock_email_cls, mock_pw_cls, mock_client,
+                                      mock_submenu, capsys):
+
+    mock_input.side_effect = ["BadUser", "GoodUser", "test@email.com"]
+
+    mock_getpass.side_effect = ["Pass123", "Pass123"]
+
+
+    mock_user_cls.side_effect = [
+        ValidationError("Username non valido"),
+        MagicMock(value="GoodUser")
+    ]
+    mock_email_cls.side_effect = lambda x: MagicMock(value=x)
+    mock_pw_cls.side_effect = lambda x: MagicMock(value=x)
+
+
+    mock_client.register.return_value = True
+    mock_client.login.return_value = True
+
+    do_register()
+
+    captured = capsys.readouterr()
+
+    assert "Error" in captured.out
+    assert "Username non valido" in captured.out
+
+    assert "Registration successful" in captured.out
+
+
+from unittest.mock import patch, MagicMock
+from tui.app import do_login
+
+
+@patch('tui.app.submenu')
+@patch('tui.app.client')
+@patch('tui.app.Password')
+@patch('tui.app.Username')
+@patch('tui.app.getpass')
+@patch('builtins.input')
+def test_do_login_value_error(mock_input, mock_getpass, mock_user_cls, mock_pw_cls, mock_client, mock_submenu, capsys):
+
+    mock_input.side_effect = ["BadUser", "GoodUser"]
+
+    mock_getpass.side_effect = ["SecretPass"]
+
+    mock_user_cls.side_effect = [
+        ValueError("Username cannot be empty"),
+        MagicMock(value="GoodUser")
+    ]
+
+    mock_pw_cls.side_effect = lambda x: MagicMock(value=x)
+
+    mock_client.login.return_value = True
+
+
+    do_login()
+
+
+    captured = capsys.readouterr()
+
+    assert "Error: Username cannot be empty" in captured.out
+
+
+    assert "Login successful" in captured.out
+
+
+    mock_submenu.assert_called_once()

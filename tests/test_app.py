@@ -909,8 +909,6 @@ def test_do_register_validation_error(mock_input, mock_getpass, mock_user_cls, m
     assert "Registration successful" in captured.out
 
 
-from unittest.mock import patch, MagicMock
-from tui.app import do_login
 
 
 @patch('tui.app.submenu')
@@ -942,8 +940,6 @@ def test_do_login_value_error(mock_input, mock_getpass, mock_user_cls, mock_pw_c
 
     assert "Error: Username cannot be empty" in captured.out
 
-
     assert "Login successful" in captured.out
-
 
     mock_submenu.assert_called_once()

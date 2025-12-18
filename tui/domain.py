@@ -55,8 +55,14 @@ class Email:
 
     def __post_init__(self):
         validate(
-            "Email.value", self.value, min_length=5, max_length=50, custom=is_email
+            "Email.value",
+            self.value,
+            custom=pattern(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"),
+            help_msg="Invalid email format",
         )
+    
+    def __str__(self):
+        return self.value
 
 
 @typechecked

@@ -1,5 +1,7 @@
 from getpass import getpass
 
+from valid8 import ValidationError
+
 from tui.validators import (
     validate_label,
     validate_expired_at,

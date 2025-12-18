@@ -12,7 +12,7 @@ def pattern(pattern: str) -> Callable[[str], bool]:
     def validator(value: str) -> bool:
         return bool(re.fullmatch(pattern, value))
 
-    validator.__name__ = f"pattern{pattern}"
+    validator.__name__ = f"pattern ({pattern})"
 
     return validator
 

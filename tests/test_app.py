@@ -21,6 +21,11 @@ from tui.app import do_login, do_register, logout, edit_password, convert_url, e
 from tui.domain import short
 
 
+@patch("tui.app.build_main_menu")
+def test_main_calls_build_main_menu_when_main(mock_build):
+    main("__main__")
+    mock_build.assert_called_once()
+
 
 @patch('tui.app.submenu')
 @patch('tui.app.client')

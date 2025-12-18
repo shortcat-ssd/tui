@@ -362,6 +362,8 @@ def build_main_menu():
     menu.run()
 
 def main(name: str):
-    if __name__ == "__main__":
+    if name == "__main__":
         build_main_menu()
+
+main(__name__)
 

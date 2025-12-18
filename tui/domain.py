@@ -9,11 +9,6 @@ from typeguard import typechecked
 from tui.validators import pattern, is_valid_password
 
 
-def is_email(value: str) -> bool:
-    pattern = r"^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"
-    return bool(re.fullmatch(pattern, value))
-
-
 @typechecked
 @dataclass(frozen=True)
 class Username:

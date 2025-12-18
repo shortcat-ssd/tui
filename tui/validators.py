@@ -22,14 +22,6 @@ def is_valid_password(value: str) -> bool:
     return not value.isdigit()
 
 
-def is_email(value: str) -> bool:
-
-    pattern = r"^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"
-    if not re.fullmatch(pattern, value):
-        raise ValidationError("Invalid email format")
-    return True
-
-
 def validate_url(url: str) -> str:
     if not url:
         raise ValidationError("URL cannot be empty")

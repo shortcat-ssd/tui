@@ -1,13 +1,11 @@
-from unittest.mock import patch, MagicMock
-
 
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 
+from unittest.mock import patch
+from tui.app import modify_target
 
-from tui.app import modify_expire, edit_username, same_method, show_urls_dict
-
-from tui.app import  editmenu
+from tui.app import modify_expire, edit_username, same_method, show_urls_dict, editmenu
 from tui.app import modify_visibility,urls_to_dict, modify_label, submenu, main, build_main_menu
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
@@ -64,7 +62,6 @@ def test_do_login_fail(mock_input, mock_getpass, mock_client, mock_submenu):
     mock_submenu.assert_not_called()
 
 
-
 @patch('tui.app.client')
 def test_logout_success(mock_client):
     mock_client.logout.return_value = True
@@ -94,11 +91,8 @@ def test_modify_target_backend_failure(capsys):
     fake_new_target = "http://nuovo-sito.com"
 
     with patch('tui.app.same_method', return_value=fake_short_url):
-        # 2. Utente inserisce input
         with patch('builtins.input', return_value=fake_new_target):
-            # 3. Validazione OK
             with patch('tui.app.validate_url', return_value=fake_new_target):
-                # 4. IL CLIENT RESTITUISCE FALSE (Errore Backend)
                 with patch('tui.app.client.edit_target', return_value=False) as mock_edit:
                     modify_target()
 
@@ -122,8 +116,7 @@ def test_modify_target_invalid_input(capsys):
                     assert "Invalid target. Operation canceled." in captured.out
 
 
-from unittest.mock import patch
-from tui.app import modify_target
+
 
 
 def test_modify_target_no_selection():
@@ -194,22 +187,6 @@ def test_convert_url_success(mock_input, mock_print, mock_client):
 class ValidationError(Exception):
     pass
 
-"""
-@patch('builtins.input', side_effect=[' ', 'label','2026-09-09 09:09', "yes"])
-@patch('builtins.print')
-@patch('tui.app.client')
-@patch('tui.app.validate_url', side_effect=ValidationError("dummy"))
-def test_convert_url_fail(mock_validate_url, mock_client, mock_print, mock_input):
-
-    convert_url()
-
-
-    mock_client.createUrl.assert_not_called()
-
-    assert any("dummy" in str(call) for call in mock_print.call_args_list)
-"""
-
-
 @patch('builtins.input', side_effect=['https://example.com', 'label', '2026-99-99 99:99', 'yes'])
 @patch('builtins.print')
 @patch('tui.app.client')
@@ -238,7 +215,6 @@ def test_do_register_client_fail(mock_submenu, mock_client, mock_print, mock_get
         pass
 
     mock_client.register.assert_called_once()
-
 
     mock_client.login.assert_not_called()
     mock_submenu.assert_not_called()
@@ -312,7 +288,6 @@ def test_delete_url_success(mock_urls_to_dict, mock_show, mock_client, mock_prin
 def test_modify_visibility_true_decorator(mock_same, mock_input, mock_val, mock_edit):
     modify_visibility()
 
-
     mock_edit.assert_called_once_with("short123", True)
 
 @patch('tui.app.client.edit_visibility')
@@ -342,7 +317,6 @@ def test_same_method_success(mock_get_url, mock_input, mock_urls_to_dict, mock_s
 
     result = same_method()
 
-
     assert result == fake_item
     mock_show.assert_called_once()
 
@@ -354,7 +328,6 @@ def test_same_method_api_error(mock_get_url, mock_print):
     result = same_method()
     assert result is None 
     mock_print.assert_called_with("Error fetching URLs:", "Network Error")
-
 
 
 
@@ -445,8 +418,8 @@ def test_editmenu_runs_menu(mock_builder_class):
 
     mock_print.assert_called_with("\n============= EDIT MENU ==============")
 
-
     menu_mock.run.assert_called_once()
+
 def test_urls_to_dict_populated():
     obj1 = MagicMock(label="Link1")
     obj2 = MagicMock(label="Link2")
@@ -511,7 +484,7 @@ def test_show_urls_dict_long_and_date(capsys):
 
 
 def test_show_urls_dict_short_no_date(capsys):
-    # SETUP
+
     mock_url = MagicMock()
     mock_url.code = "XYZ99"
     mock_url.target = "http://short.com"
@@ -653,11 +626,11 @@ def test_modify_expire_success(mock_same, mock_input, mock_val, mock_edit, capsy
 @patch('builtins.input')
 @patch('tui.app.same_method')
 def test_modify_expire_no_selection(mock_same, mock_input, mock_edit):
-    mock_same.return_value = None  # Nessun URL selezionato
+    mock_same.return_value = None
 
     modify_expire()
 
-    mock_input.assert_not_called()  # Esce prima dell'input
+    mock_input.assert_not_called()
     mock_edit.assert_not_called()
 
 @patch('tui.app.client.edit_expire')
@@ -665,11 +638,9 @@ def test_modify_expire_no_selection(mock_same, mock_input, mock_edit):
 @patch('tui.app.same_method')
 def test_modify_expire_cancel(mock_same, mock_input, mock_edit):
     mock_same.return_value = "short123"
-    mock_input.return_value = "0"  # Utente annulla
-
+    mock_input.return_value = "0"
 
     modify_expire()
-
 
     mock_edit.assert_not_called()
 
@@ -680,8 +651,7 @@ def test_modify_expire_cancel(mock_same, mock_input, mock_edit):
 def test_modify_expire_bad_format(mock_same, mock_input, mock_val, mock_edit, capsys):
 
     mock_same.return_value = "short123"
-    mock_input.return_value = "non-una-data"  # Formato sbagliato
-
+    mock_input.return_value = "non-una-data"
 
     modify_expire()
 
@@ -720,7 +690,7 @@ def test_submenu_runs_menu(mock_builder_class):
     menu_mock = MagicMock(name="menu_instance")
     mock_builder_instance.build.return_value = menu_mock
 
-    # Patch di print
+
     with patch('builtins.print') as mock_print:
         submenu()
 
@@ -741,13 +711,12 @@ def test_build_main_menu(mock_description, mock_builder_class):
     menu_mock = MagicMock(name="menu_instance")
     mock_builder_instance.build.return_value = menu_mock
 
-    # Chiama direttamente la funzione di costruzione
     build_main_menu()
 
     mock_builder_class.assert_called_once_with(mock_description.return_value)
     mock_builder_instance.build.assert_called_once()
     menu_mock.run.assert_called_once()
-from django.core.exceptions import ValidationError
+
 
 
 @patch('builtins.input')
@@ -810,8 +779,7 @@ from django.core.exceptions import ValidationError
 
 @patch('builtins.input')
 def test_convert_url_invalid_date_format(mock_input, capsys):
-    # SETUP
-    # Simuliamo: URL, Label, DATA SBAGLIATA, Private
+
     mock_input.side_effect = [
         "http://google.com",
         "MyLabel",
@@ -829,7 +797,7 @@ def test_convert_url_invalid_date_format(mock_input, capsys):
 @patch('tui.app.validate_url')
 @patch('builtins.input')
 def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
-    # SETUP
+
     mock_input.side_effect = ["bad-url", "Label", "", "no"]
 
     mock_val_url.side_effect = ValidationError("URL non valido!")

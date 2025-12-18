@@ -1,20 +1,12 @@
 import re
 from typing import Optional
+from datetime import datetime
+from dataclasses import dataclass
 
-from .menu import is_alphanumeric
 from valid8 import validate
 from typeguard import typechecked
-from dataclasses import dataclass
-from datetime import datetime
 
-
-def is_alphanumeric(value: str) -> bool:
-    return bool(re.fullmatch(r"[a-zA-Z0-9]*", value))
-
-
-def is_strong_password(value: str) -> bool:
-    pattern = r"^(?=.*[A-Z])" r"(?=.*\d)" r"(?=.*[^a-zA-Z0-9])" r".{8,50}$"
-    return bool(re.fullmatch(pattern, value))
+from tui.validators import pattern, is_valid_password
 
 
 def is_email(value: str) -> bool:
@@ -25,35 +17,34 @@ def is_email(value: str) -> bool:
 @typechecked
 @dataclass(frozen=True)
 class Username:
-
     value: str
 
     def __post_init__(self):
         validate(
             "Username.value",
             self.value,
-            min_length=1,
-            max_length=50,
-            custom=is_alphanumeric,
+            min_len=1,
+            max_len=150,
+            custom=pattern(r"^[\w.@+-]+$"),
+            help_msg="Username must be 1-150 characters and contain only letters, numbers, and @./+_-",
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
 @typechecked
 @dataclass(frozen=True)
 class Password:
-
     value: str
 
     def __post_init__(self):
         validate(
             "Password.value",
             self.value,
-            min_length=8,
-            max_length=50,
-            custom=is_strong_password,
+            min_len=8,
+            custom=is_valid_password,
+            help_msg="Password must be at least 8 characters long and cannot be entirely numeric",
         )
 
 
@@ -98,4 +89,3 @@ class short:
 
     def __str__(self):
         return f"{self.target}"
-

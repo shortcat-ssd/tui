@@ -1,7 +1,6 @@
 from getpass import getpass
 
-
-from valid8 import ValidationError
+from django.core.exceptions import ValidationError
 
 from tui.validators import (
     validate_label,

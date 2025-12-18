@@ -82,9 +82,7 @@ class ShortUrl:
 
     @property
     def is_expired(self) -> bool:
-        if self.expired_at is None:
-            return False
-        return self.expired_at <= datetime.now()
+        return self.expired_at is not None and self.expired_at <= datetime.now()
 
     def __str__(self):
         return f"{self.code} -> {self.target}"

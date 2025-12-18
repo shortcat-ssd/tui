@@ -110,6 +110,11 @@ def test_register_success(backend):
         assert result is True
 
 
+def test_email_string():
+    email = Email("me@example.com")
+    assert str(email) == "me@example.com"
+
+
 def test_email_is_valid():
     email = "emaildiprova@test.it"
     assert is_email(email) is True

@@ -23,10 +23,10 @@ def test_is_expired_goes_through_not_none_branch():
         label="lab",
         target="http://a.it",
         user="u",
-        expired_at=datetime(2099, 1, 1, 0, 0, 0),  # sicuramente NON None
+        expired_at=datetime(2099, 1, 1, 0, 0, 0),
     )
 
-    assert s.expired_at is not None          # 🔒 prova che stai nel ramo giusto
+    assert s.expired_at is not None
     _ = s.is_expired
 
 
@@ -58,7 +58,7 @@ def backend():
 
 def test_shorturl_is_expired_none():
     s = ShortUrl(code="c1", label="lab", target="http://a.it", user="u", expired_at=None)
-    assert s.is_expired is False  # copre: if ... return False
+    assert s.is_expired is False
 
 
 def test_shorturl_is_expired_future():
@@ -69,7 +69,7 @@ def test_shorturl_is_expired_future():
         user="u",
         expired_at=datetime.now() + timedelta(days=1),
     )
-    assert s.is_expired is False  # copre: return self.expired_at <= now (False)
+    assert s.is_expired is False
 
 
 def test_shorturl_is_expired_past():

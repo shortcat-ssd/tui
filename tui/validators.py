@@ -1,23 +1,25 @@
 import re
-from urllib.parse import urlparse
-from valid8 import ValidationError
-from typing import Optional
 from datetime import datetime
+from urllib.parse import urlparse
+from typing import Callable, Optional
+
+from typeguard import typechecked
+from valid8 import ValidationError
 
 
-def is_alphanumeric(value: str) -> bool:
-    return bool(re.fullmatch(r"[a-zA-Z0-9]*", value))
+@typechecked
+def pattern(pattern: str) -> Callable[[str], bool]:
+    def validator(value: str) -> bool:
+        return bool(re.fullmatch(pattern, value))
+
+    validator.__name__ = f"pattern{pattern}"
+
+    return validator
 
 
-def is_strong_password(value: str) -> bool:
-
-    if not value:
-        raise ValidationError("Password cannot be empty")
-    if len(value) < 8:
-        raise ValidationError("Password must be at least 8 characters long")
-    if len(value) > 128:
-        raise ValidationError("Password cannot be longer than 128 characters")
-    return True
+@typechecked
+def is_valid_password(value: str) -> bool:
+    return not value.isdigit()
 
 
 def is_email(value: str) -> bool:

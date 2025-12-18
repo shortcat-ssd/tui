@@ -4,7 +4,6 @@ from urllib.parse import urlparse
 from typing import Callable, Optional
 
 from typeguard import typechecked
-from valid8 import ValidationError
 
 
 @typechecked
@@ -26,39 +25,39 @@ def is_email(value: str) -> bool:
 
     pattern = r"^[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"
     if not re.fullmatch(pattern, value):
-        raise ValidationError("Invalid email format")
+        raise ValueError("Invalid email format")
     return True
 
 
 def validate_url(url: str) -> str:
     if not url:
-        raise ValidationError("URL cannot be empty")
+        raise ValueError("URL cannot be empty")
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
-        raise ValidationError("URL must start with http:// or https://")
+        raise ValueError("URL must start with http:// or https://")
     if not parsed.netloc:
-        raise ValidationError("URL must have a valid domain")
+        raise ValueError("URL must have a valid domain")
     return url
 
 
 def validate_label(label: str) -> str:
     if not label:
-        raise ValidationError("Label cannot be empty")
+        raise ValueError("Label cannot be empty")
     if len(label) > 100:
-        raise ValidationError("Label cannot be longer than 100 characters")
+        raise ValueError("Label cannot be longer than 100 characters")
     return label
 
 
 def validate_private(private) -> bool:
     if not isinstance(private, bool):
-        raise ValidationError("Private must be a boolean value")
+        raise ValueError("Private must be a boolean value")
     return private
 
 
 def validate_expired_at(expired_at: Optional[datetime]) -> Optional[datetime]:
     if expired_at is not None:
         if not isinstance(expired_at, datetime):
-            raise ValidationError("Expired_at must be a datetime object or None")
+            raise ValueError("Expired_at must be a datetime object or None")
         if expired_at <= datetime.now():
-            raise ValidationError("Expiration date must be in the future")
+            raise ValueError("Expiration date must be in the future")
     return expired_at

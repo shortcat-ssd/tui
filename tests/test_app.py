@@ -224,6 +224,27 @@ def test_do_register_client_fail(mock_submenu, mock_client, mock_print, mock_get
     assert any("Registration failed" in msg for msg in printed_messages)
 
 
+@patch('tui.app.submenu')
+@patch('tui.app.client')
+@patch('builtins.print')
+@patch('tui.app.getpass', side_effect=['Password1!', 'Password2!', KeyboardInterrupt])
+@patch('builtins.input', side_effect=['user1', 'user1@example.com', KeyboardInterrupt])
+def test_do_register_password_mismatch(mock_input, mock_getpass, mock_print, mock_client, mock_submenu):
+
+    try:
+        do_register()
+    except KeyboardInterrupt:
+        pass
+
+
+    mock_client.register.assert_not_called()
+    mock_client.login.assert_not_called()
+    mock_submenu.assert_not_called()
+
+
+    printed_messages = [str(call) for call in mock_print.call_args_list]
+    assert any("Passwords do not match" in msg for msg in printed_messages)
+
 @patch('tui.app.editmenu')
 def test_edit_url_calls_editmenu(mock_editmenu):
     edit_url()

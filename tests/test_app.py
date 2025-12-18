@@ -28,6 +28,7 @@ from tui.app import (
     convert_url
 )
 
+import pytest
 
 @patch("tui.app.build_main_menu")
 def test_main_calls_build_main_menu_when_main(mock_build):
@@ -770,19 +771,6 @@ def test_convert_url_invalid_date_format(mock_input, capsys):
     assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
 
 
-@patch("tui.app.validate_url")
-@patch("builtins.input")
-def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
-    mock_input.side_effect = ["bad-url", "Label", "", "no"]
-
-    mock_val_url.side_effect = ValidationError("URL non valido!")
-
-    convert_url()
-
-    captured = capsys.readouterr()
-    assert "Error in input" in captured.out
-
-
 @patch("tui.app.validate_expired_at")
 @patch("tui.app.validate_url")
 @patch("tui.app.validate_label")
@@ -791,19 +779,20 @@ def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
 def test_convert_url_expired_date_logic_error(
     mock_input, mock_val_priv, mock_val_lbl, mock_val_url, mock_val_date, capsys
 ):
-    mock_input.side_effect = ["http://ok.com", "Label", "2020-01-01 12:00", "no"]
+    with pytest.raises(ValidationError):
+        mock_input.side_effect = ["http://ok.com", "Label", "2020-01-01 12:00", "no"]
 
-    mock_val_url.side_effect = lambda x: x
-    mock_val_lbl.side_effect = lambda x: x
-    mock_val_priv.side_effect = lambda x: x
+        mock_val_url.side_effect = lambda x: x
+        mock_val_lbl.side_effect = lambda x: x
+        mock_val_priv.side_effect = lambda x: x
 
-    mock_val_date.side_effect = ValidationError("Date cannot be in the past")
+        mock_val_date.side_effect = ValidationError("Date cannot be in the past")
 
-    convert_url()
+        convert_url()
 
-    captured = capsys.readouterr()
-    assert "Error in input" in captured.out
-    assert "Date cannot be in the past" in captured.out
+        captured = capsys.readouterr()
+        assert "Error in input" in captured.out
+        assert "Date cannot be in the past" in captured.out
 
 
 @patch("builtins.input")
@@ -820,16 +809,16 @@ def test_convert_url_invalid_date_format(mock_input, capsys):
 @patch("tui.app.validate_url")
 @patch("builtins.input")
 def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
+    with pytest.raises(ValidationError):
+        mock_input.side_effect = ["bad-url", "Label", "", "no"]
 
-    mock_input.side_effect = ["bad-url", "Label", "", "no"]
+        mock_val_url.side_effect = ValidationError("URL non valido!")
 
-    mock_val_url.side_effect = ValidationError("URL non valido!")
+        convert_url()
 
-    convert_url()
-
-    captured = capsys.readouterr()
-    assert "Error in input" in captured.out
-    assert "URL non valido!" in captured.out
+        captured = capsys.readouterr()
+        assert "Error in input" in captured.out
+        assert "URL non valido!" in captured.out
 
 
 @patch("tui.app.client.createUrl")
@@ -892,28 +881,29 @@ def test_do_register_validation_error(
     capsys,
 ):
 
-    mock_input.side_effect = ["BadUser", "GoodUser", "test@email.com"]
+    with pytest.raises(ValidationError):
+        mock_input.side_effect = ["BadUser", "GoodUser", "test@email.com"]
 
-    mock_getpass.side_effect = ["Pass123", "Pass123"]
+        mock_getpass.side_effect = ["Pass123", "Pass123"]
 
-    mock_user_cls.side_effect = [
-        ValidationError("Username non valido"),
-        MagicMock(value="GoodUser"),
-    ]
-    mock_email_cls.side_effect = lambda x: MagicMock(value=x)
-    mock_pw_cls.side_effect = lambda x: MagicMock(value=x)
+        mock_user_cls.side_effect = [
+            ValidationError("Username non valido"),
+            MagicMock(value="GoodUser"),
+        ]
+        mock_email_cls.side_effect = lambda x: MagicMock(value=x)
+        mock_pw_cls.side_effect = lambda x: MagicMock(value=x)
 
-    mock_client.register.return_value = True
-    mock_client.login.return_value = True
+        mock_client.register.return_value = True
+        mock_client.login.return_value = True
 
-    do_register()
+        do_register()
 
-    captured = capsys.readouterr()
+        captured = capsys.readouterr()
 
-    assert "Error" in captured.out
-    assert "Username non valido" in captured.out
+        assert "Error" in captured.out
+        assert "Username non valido" in captured.out
 
-    assert "Registration successful" in captured.out
+        assert "Registration successful" in captured.out
 
 
 @patch("tui.app.submenu")

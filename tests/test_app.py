@@ -15,7 +15,7 @@ from tui.app import  same_method
 
 
 from tui.app import  editmenu
-from tui.app import modify_visibility,urls_to_dict, modify_label, submenu
+from tui.app import modify_visibility,urls_to_dict, modify_label, submenu, main, build_main_menu
 from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url, url_history
 
 from tui.domain import short
@@ -737,3 +737,141 @@ def test_submenu_runs_menu(mock_builder_class):
 
 
     menu_mock.run.assert_called_once()
+
+
+
+@patch('tui.app.Menu.Builder')
+@patch('tui.app.Description')
+def test_build_main_menu(mock_description, mock_builder_class):
+    mock_builder_instance = MagicMock()
+    mock_builder_class.return_value = mock_builder_instance
+    mock_builder_instance.with_entry.return_value = mock_builder_instance
+
+    menu_mock = MagicMock(name="menu_instance")
+    mock_builder_instance.build.return_value = menu_mock
+
+    # Chiama direttamente la funzione di costruzione
+    build_main_menu()
+
+    mock_builder_class.assert_called_once_with(mock_description.return_value)
+    mock_builder_instance.build.assert_called_once()
+    menu_mock.run.assert_called_once()
+from django.core.exceptions import ValidationError
+
+
+@patch('builtins.input')
+def test_convert_url_invalid_date_format(mock_input, capsys):
+    mock_input.side_effect = [
+        "http://google.com",
+        "MyLabel",
+        "non-è-una-data",
+        "no"
+    ]
+
+
+    convert_url()
+
+    # VERIFICA
+    captured = capsys.readouterr()
+    assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
+
+
+@patch('tui.app.validate_url')
+@patch('builtins.input')
+def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
+    mock_input.side_effect = ["bad-url", "Label", "", "no"]
+
+    mock_val_url.side_effect = ValidationError("URL non valido!")
+
+
+    convert_url()
+
+    captured = capsys.readouterr()
+    assert "Error in input" in captured.out
+
+
+@patch('tui.app.validate_expired_at')
+@patch('tui.app.validate_url')
+@patch('tui.app.validate_label')
+@patch('tui.app.validate_private')
+@patch('builtins.input')
+def test_convert_url_expired_date_logic_error(mock_input, mock_val_priv, mock_val_lbl, mock_val_url, mock_val_date,
+                                              capsys):
+    mock_input.side_effect = ["http://ok.com", "Label", "2020-01-01 12:00", "no"]
+
+    mock_val_url.side_effect = lambda x: x
+    mock_val_lbl.side_effect = lambda x: x
+    mock_val_priv.side_effect = lambda x: x
+
+    mock_val_date.side_effect = ValidationError("Date cannot be in the past")
+
+    convert_url()
+
+    captured = capsys.readouterr()
+    assert "Error in input" in captured.out
+    assert "Date cannot be in the past" in captured.out
+
+
+from unittest.mock import patch, MagicMock
+from tui.app import convert_url
+from django.core.exceptions import ValidationError
+
+
+@patch('builtins.input')
+def test_convert_url_invalid_date_format(mock_input, capsys):
+    # SETUP
+    # Simuliamo: URL, Label, DATA SBAGLIATA, Private
+    mock_input.side_effect = [
+        "http://google.com",
+        "MyLabel",
+        "non-è-una-data",
+        "no"
+    ]
+
+
+    convert_url()
+
+
+    captured = capsys.readouterr()
+    assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
+
+@patch('tui.app.validate_url')
+@patch('builtins.input')
+def test_convert_url_validation_error(mock_input, mock_val_url, capsys):
+    # SETUP
+    mock_input.side_effect = ["bad-url", "Label", "", "no"]
+
+    mock_val_url.side_effect = ValidationError("URL non valido!")
+
+    convert_url()
+
+    captured = capsys.readouterr()
+    assert "Error in input" in captured.out
+    assert "URL non valido!" in captured.out
+
+
+
+@patch('tui.app.client.createUrl')
+@patch('tui.app.short')
+@patch('tui.app.validate_private')
+@patch('tui.app.validate_label')
+@patch('tui.app.validate_url')
+@patch('builtins.input')
+def test_convert_url_api_failure(mock_input, mock_val_url, mock_val_lbl, mock_val_priv, mock_short_cls, mock_create,
+                                 capsys):
+
+    mock_input.side_effect = ["http://valid.com", "Label", "", "no"]
+
+    mock_val_url.side_effect = lambda x: x
+    mock_val_lbl.side_effect = lambda x: x
+    mock_val_priv.side_effect = lambda x: x
+
+    mock_create.return_value = (False, "Backend Timeout")
+
+
+    convert_url()
+
+    mock_create.assert_called_once()
+
+    captured = capsys.readouterr()
+    assert "Conversion Error: Backend Timeout" in captured.out

@@ -1,18 +1,11 @@
 from unittest.mock import patch, MagicMock
 
-from tui.app import  modify_visibility, same_method
+
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 
-from tui.app import  modify_label
-from tui.app import do_login, do_register, logout, convert_url, edit_url, delete_url, url_history, editmenu, modify_expire
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, modify_visibility, \
-    urls_to_dict
-from tui.app import do_login, do_register, logout, edit_password, convert_url, edit_url, delete_url
-from tui.app import do_login, do_register, logout, edit_password, edit_url
-from tui.app import do_login, do_register, logout, edit_password, modify_target, modify_label, edit_username
-from tui.app import  same_method
 
+from tui.app import modify_expire, edit_username, same_method, show_urls_dict
 
 from tui.app import  editmenu
 from tui.app import modify_visibility,urls_to_dict, modify_label, submenu, main, build_main_menu
@@ -476,8 +469,6 @@ def test_urls_to_dict_empty():
     assert len(result) == 0
 
 
-from unittest.mock import MagicMock
-from tui.app import show_urls_dict
 
 
 
@@ -771,7 +762,7 @@ def test_convert_url_invalid_date_format(mock_input, capsys):
 
     convert_url()
 
-    # VERIFICA
+
     captured = capsys.readouterr()
     assert "Invalid date format. Use YYYY-MM-DD HH:MM" in captured.out
 
